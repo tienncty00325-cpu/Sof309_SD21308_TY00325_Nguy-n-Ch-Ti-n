@@ -1,0 +1,413 @@
+package org.example.controller;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.example.model.TaiKhoan;
+import org.example.dao.TaiKhoanDAO;
+import org.example.dao.impl.TaiKhoanDAOImpl;
+
+import java.io.IOException;
+
+@WebServlet({"/nhapma", "/he-thong/xac-thuc-otp", "/resend-otp"})
+public class XacThucOTPServlet extends HttpServlet {
+
+    private TaiKhoanDAO TaiKhoanDAO = new TaiKhoanDAOImpl();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String path = req.getServletPath();
+        if ("/resend-otp".equals(path)) {
+            handleResendOTP(req, resp);
+            return;
+        }
+        // Quên mật khẩu không còn đi qua bước nhập OTP; GET trực tiếp vào đây
+        // (không có OTP đăng ký/admin trong session) bị đẩy về đầu luồng.
+        boolean internalRoute = "/he-thong/xac-thuc-otp".equals(path);
+        resp.sendRedirect(req.getContextPath()
+                + (internalRoute ? "/he-thong/quen-mat-khau" : "/quenmatkhau"));
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String path = req.getServletPath();
+        if ("/resend-otp".equals(path)) {
+            handleResendOTP(req, resp);
+        } else {
+            handleVerifyOTP(req, resp);
+        }
+    }
+
+    private void handleVerifyOTP(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        String userOtp = req.getParameter("otp");
+        String sessionOtp = (String) session.getAttribute("otp");
+        String authType = (String) session.getAttribute("authType"); // REGISTER, ADMIN_ADD, ...
+        String email = req.getParameter("email");
+        req.setAttribute("email", email);
+
+        String requestedWith = req.getHeader("X-Requested-With");
+        boolean isAjax = "XMLHttpRequest".equals(requestedWith);
+
+        Boolean needResend = (Boolean) session.getAttribute("needResend");
+        boolean isAdminOrManagerFlow = "ADMIN_ADD".equals(authType) || "ADMIN_EDIT".equals(authType) || "MANAGER_EDIT".equals(authType) || "MANAGER_ADD".equals(authType);
+        if (isAdminOrManagerFlow && needResend != null && needResend) {
+            req.setAttribute("loi", "Bạn đã nhập sai 5 lần. Vui lòng nhấn 'Gửi lại ngay' để nhận mã OTP mới.");
+            req.getRequestDispatcher("/auth/NhapMa.jsp").forward(req, resp);
+            return;
+        }
+
+        if (sessionOtp == null || userOtp == null || !userOtp.equals(sessionOtp)) {
+            if (isAdminOrManagerFlow) {
+                Integer attempts = (Integer) session.getAttribute("otpAttempts");
+                if (attempts == null) {
+                    attempts = 0;
+                }
+                attempts++;
+                session.setAttribute("otpAttempts", attempts);
+
+                TaiKhoan tempAcc = (TaiKhoan) session.getAttribute("tempAccount");
+                String targetEmail = tempAcc != null ? tempAcc.getEmail() : (String) session.getAttribute("email");
+
+                if (attempts >= 5) {
+                    if (targetEmail != null) {
+                        org.example.util.OtpRateLimitUtil.lockoutEmail(targetEmail);
+                    }
+                    session.removeAttribute("otp");
+                    session.removeAttribute("tempAccount");
+                    session.removeAttribute("authType");
+                    session.removeAttribute("otpAttempts");
+                    session.removeAttribute("resendCount");
+                    session.removeAttribute("needResend");
+
+                    String lockMsg = "Bạn đã nhập sai mã OTP 5 lần! Email (" + (targetEmail != null ? targetEmail : "") + ") đã bị tạm khóa trong 15 phút.";
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": false, \"lockedOut\": true, \"loi\": \"" + lockMsg + "\"}");
+                        return;
+                    }
+                    session.setAttribute("error", lockMsg);
+                    TaiKhoan loggedInUser = (TaiKhoan) session.getAttribute("user");
+                    if (loggedInUser != null && loggedInUser.getRoleId() == 2) {
+                        resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                    } else {
+                        resp.sendRedirect(req.getContextPath() + "/admin/nhan-su");
+                    }
+                    return;
+                } else {
+                    String attemptMsg = "Mã xác thực không chính xác. Bạn còn " + (5 - attempts) + " lần thử.";
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": false, \"loi\": \"" + attemptMsg + "\"}");
+                        return;
+                    }
+                    req.setAttribute("loi", attemptMsg);
+                    req.getRequestDispatcher("/auth/NhapMa.jsp").forward(req, resp);
+                    return;
+                }
+            } else {
+                if (isAjax) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"success\": false, \"loi\": \"Mã xác thực không chính xác hoặc đã hết hạn.\"}");
+                    return;
+                }
+                req.setAttribute("loi", "Mã xác thực không chính xác hoặc đã hết hạn.");
+                req.getRequestDispatcher("/auth/NhapMa.jsp").forward(req, resp);
+                return;
+            }
+        }
+
+        // Xóa OTP và attempts sau khi dùng xong
+        session.removeAttribute("otp");
+        session.removeAttribute("otpAttempts");
+        session.removeAttribute("resendCount");
+        session.removeAttribute("needResend");
+
+        if ("REGISTER".equals(authType) || "ADMIN_ADD".equals(authType) || "ADMIN_EDIT".equals(authType) || "MANAGER_EDIT".equals(authType) || "MANAGER_ADD".equals(authType)) {
+            // Xử lý hoàn tất đăng ký hoặc admin thêm tài khoản
+            TaiKhoan tempAccount = (TaiKhoan) session.getAttribute("tempAccount");
+            String[] tempSports = (String[]) session.getAttribute("tempSports");
+
+            if (tempAccount == null) {
+                if ("ADMIN_ADD".equals(authType) || "ADMIN_EDIT".equals(authType)) {
+                    resp.sendRedirect(req.getContextPath() + "/admin/nhan-su");
+                } else if ("MANAGER_EDIT".equals(authType) || "MANAGER_ADD".equals(authType)) {
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": false, \"loi\": \"Phiên làm việc đã hết hạn. Vui lòng thử lại.\"}");
+                        return;
+                    }
+                    resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                } else {
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": false, \"loi\": \"Phiên làm việc đã hết hạn. Vui lòng đăng ký lại.\"}");
+                        return;
+                    }
+                    resp.sendRedirect(req.getContextPath() + "/dangky");
+                }
+                return;
+            }
+
+            if ("ADMIN_ADD".equals(authType)) {
+                // Double check email uniqueness right before adding
+                if (tempAccount.getEmail() != null && !tempAccount.getEmail().trim().isEmpty()) {
+                    if (TaiKhoanDAO.kiemtraEmail(tempAccount.getEmail().trim())) {
+                        session.setAttribute("error", "Email đã tồn tại trên hệ thống!");
+                        if (isAjax) {
+                            resp.setContentType("application/json;charset=UTF-8");
+                            resp.getWriter().write("{\"success\": false, \"loi\": \"Email đã tồn tại trên hệ thống!\"}");
+                            return;
+                        }
+                        TaiKhoan loggedInUser = (TaiKhoan) session.getAttribute("user");
+                        if (loggedInUser != null && loggedInUser.getRoleId() == 2) {
+                            resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                        } else {
+                            resp.sendRedirect(req.getContextPath() + "/admin/nhan-su");
+                        }
+                        return;
+                    }
+                }
+
+                // Admin thêm tài khoản trực tiếp sau khi xác thực thành công
+                TaiKhoanDAO.addAccountByAdmin(tempAccount);
+
+                session.removeAttribute("tempAccount");
+                session.removeAttribute("tempSports");
+                session.removeAttribute("authType");
+
+                session.setAttribute("message", "Thêm tài khoản thành công!");
+                if (isAjax) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"success\": true, \"message\": \"Thêm tài khoản thành công!\"}");
+                    return;
+                }
+                TaiKhoan loggedInUser = (TaiKhoan) session.getAttribute("user");
+                if (loggedInUser != null && loggedInUser.getRoleId() == 2) {
+                    resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/admin/nhan-su");
+                }
+            } else if ("MANAGER_ADD".equals(authType)) {
+                // Double check email uniqueness right before adding
+                if (tempAccount.getEmail() != null && !tempAccount.getEmail().trim().isEmpty()) {
+                    if (TaiKhoanDAO.kiemtraEmail(tempAccount.getEmail().trim())) {
+                        session.setAttribute("error", "Email đã tồn tại trên hệ thống!");
+                        session.removeAttribute("tempAccount");
+                        session.removeAttribute("tempRawPassword");
+                        session.removeAttribute("tempManagerAccountId");
+                        session.removeAttribute("authType");
+                        if (isAjax) {
+                            resp.setContentType("application/json;charset=UTF-8");
+                            resp.getWriter().write("{\"success\": false, \"loi\": \"Email đã tồn tại trên hệ thống!\"}");
+                            return;
+                        }
+                        resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                        return;
+                    }
+                }
+
+                // Manager thêm nhân viên sau khi email được xác thực qua OTP
+                boolean saved = TaiKhoanDAO.addAccountByAdmin(tempAccount);
+                if (!saved) {
+                    session.removeAttribute("tempAccount");
+                    session.removeAttribute("tempRawPassword");
+                    session.removeAttribute("tempManagerAccountId");
+                    session.removeAttribute("authType");
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": false, \"loi\": \"Lỗi hệ thống khi tạo tài khoản. Vui lòng thử lại hoặc liên hệ quản trị viên.\"}");
+                        return;
+                    }
+                    resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                    return;
+                }
+
+                // Gửi email thông báo kích hoạt kèm mật khẩu
+                String rawPwd = (String) session.getAttribute("tempRawPassword");
+                final String finalEmail = tempAccount.getEmail();
+                final String finalUsername = tempAccount.getUsername();
+                final String finalName = tempAccount.getFullName() != null ? tempAccount.getFullName() : finalUsername;
+                final String finalPwd = rawPwd != null ? rawPwd : "(đã được thiết lập)";
+                new Thread(() -> {
+                    try {
+                        org.example.util.EmailUtil.sendHtmlEmail(finalEmail, "V-SPORT — Kích hoạt tài khoản",
+                            org.example.util.EmailTemplates.kichHoatNhanVien(finalName, finalUsername, finalPwd, null));
+                    } catch (Exception ignored) {}
+                }).start();
+
+                // Audit log
+                TaiKhoan loggedInUser2 = (TaiKhoan) session.getAttribute("user");
+                if (loggedInUser2 != null) {
+                    try {
+                        org.example.service.AuditLogService.log(req, loggedInUser2,
+                            org.example.service.AuditLogService.ACTION_ADD_STAFF,
+                            org.example.service.AuditLogService.ENTITY_ACCOUNT,
+                            String.valueOf(tempAccount.getAccountId()), finalName,
+                            "Manager thêm nhân viên vào chi nhánh (xác thực OTP email)");
+                    } catch (Exception ignored) {}
+                }
+
+                session.removeAttribute("tempAccount");
+                session.removeAttribute("tempRawPassword");
+                session.removeAttribute("tempManagerAccountId");
+                session.removeAttribute("authType");
+
+                session.removeAttribute("error");
+                session.setAttribute("message", "Thêm nhân viên thành công!");
+                if (isAjax) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"success\": true, \"message\": \"Thêm nhân viên thành công!\"}");
+                    return;
+                }
+                resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+            } else if ("ADMIN_EDIT".equals(authType) || "MANAGER_EDIT".equals(authType)) {
+                // Double check email uniqueness right before updating
+                if (tempAccount.getEmail() != null && !tempAccount.getEmail().trim().isEmpty()) {
+                    TaiKhoan oldAcc = TaiKhoanDAO.getAccountById(tempAccount.getAccountId());
+                    if (oldAcc != null && !tempAccount.getEmail().equalsIgnoreCase(oldAcc.getEmail())) {
+                        if (TaiKhoanDAO.kiemtraEmail(tempAccount.getEmail().trim())) {
+                            session.setAttribute("error", "Email đã tồn tại trên hệ thống!");
+                            if ("MANAGER_EDIT".equals(authType)) {
+                                resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                            } else {
+                                resp.sendRedirect(req.getContextPath() + "/admin/nhan-su");
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // Cập nhật tài khoản sau khi xác thực OTP thành công
+                TaiKhoanDAO.updateAccount(tempAccount);
+
+                session.removeAttribute("tempAccount");
+                session.removeAttribute("tempSports");
+                session.removeAttribute("authType");
+
+                session.setAttribute("message", "Cập nhật thông tin tài khoản thành công!");
+                if (isAjax) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"success\": true, \"message\": \"Cập nhật thông tin tài khoản thành công!\"}");
+                    return;
+                }
+                if ("MANAGER_EDIT".equals(authType)) {
+                    resp.sendRedirect(req.getContextPath() + "/manager/nhan-su");
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/admin/nhan-su");
+                }
+            } else {
+                // Khách tự đăng ký
+                if (tempAccount.getEmail() != null && !tempAccount.getEmail().trim().isEmpty()) {
+                    if (TaiKhoanDAO.kiemtraEmail(tempAccount.getEmail().trim())) {
+                        if (isAjax) {
+                            resp.setContentType("application/json;charset=UTF-8");
+                            resp.getWriter().write("{\"success\": false, \"loi\": \"Email đã tồn tại trên hệ thống!\"}");
+                            return;
+                        }
+                        req.setAttribute("loi", "Email đã tồn tại trên hệ thống!");
+                        req.getRequestDispatcher("/auth/DangKy.jsp").forward(req, resp);
+                        return;
+                    }
+                }
+
+                String ketQua = TaiKhoanDAO.dangKyKhachHang(
+                    tempAccount,
+                    tempSports
+                );
+
+                session.removeAttribute("tempAccount");
+                session.removeAttribute("tempSports");
+                session.removeAttribute("authType");
+
+                if (ketQua.contains("thành công")) {
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": true, \"step\": \"register-success\", \"thongbao\": \"Đăng ký thành công! Vui lòng đăng nhập với tài khoản của bạn.\"}");
+                        return;
+                    }
+                    req.setAttribute("thongbao", "Đăng ký thành công! Vui lòng đăng nhập với tài khoản của bạn.");
+                    req.setAttribute("username", tempAccount.getUsername());
+                    req.getRequestDispatcher("/auth/DangNhap.jsp").forward(req, resp);
+                } else {
+                    if (isAjax) {
+                        resp.setContentType("application/json;charset=UTF-8");
+                        resp.getWriter().write("{\"success\": false, \"loi\": \"Lỗi hệ thống khi lưu tài khoản. Vui lòng thử lại!\"}");
+                        return;
+                    }
+                    req.setAttribute("loi", "Lỗi hệ thống khi lưu tài khoản. Vui lòng thử lại!");
+                    req.getRequestDispatcher("/auth/DangKy.jsp").forward(req, resp);
+                }
+            }
+
+        }
+    }
+
+    private void handleResendOTP(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        String authType = (String) session.getAttribute("authType");
+
+        String email = null;
+        String fullName = "";
+
+        if ("REGISTER".equals(authType) || "ADMIN_ADD".equals(authType) || "ADMIN_EDIT".equals(authType) || "MANAGER_EDIT".equals(authType) || "MANAGER_ADD".equals(authType)) {
+            TaiKhoan tempAccount = (TaiKhoan) session.getAttribute("tempAccount");
+            if (tempAccount != null) {
+                email = tempAccount.getEmail();
+                fullName = tempAccount.getFullName();
+            }
+        }
+        
+        String requestedWith = req.getHeader("X-Requested-With");
+        boolean isAjax = "XMLHttpRequest".equals(requestedWith);
+
+        if (email == null || email.trim().isEmpty()) {
+            if (isAjax) {
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().write("{\"success\": false, \"loi\": \"Không tìm thấy thông tin email để gửi lại OTP. Vui lòng thực hiện lại.\"}");
+                return;
+            }
+            req.setAttribute("loi", "Không tìm thấy thông tin email để gửi lại OTP. Vui lòng thực hiện lại.");
+            req.getRequestDispatcher("/auth/NhapMa.jsp").forward(req, resp);
+            return;
+        }
+
+        Integer resendCount = (Integer) session.getAttribute("resendCount");
+        if (resendCount == null) resendCount = 0;
+        if (resendCount >= 5) {
+            String limitMsg = "Bạn đã vượt quá số lần gửi lại mã OTP tối đa (5/5 lần).";
+            if (isAjax) {
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().write("{\"success\": false, \"loi\": \"" + limitMsg + "\", \"resendCount\": " + resendCount + "}");
+                return;
+            }
+            req.setAttribute("loi", limitMsg);
+            req.getRequestDispatcher("/auth/NhapMa.jsp").forward(req, resp);
+            return;
+        }
+
+        resendCount++;
+        session.setAttribute("resendCount", resendCount);
+        
+        // Gửi OTP mới
+        String otpString = TaiKhoanDAO.sendRegistrationOTP(email, fullName);
+
+        session.setAttribute("otp", otpString);
+        session.setAttribute("otpAttempts", 0); // Reset số lần thử khi gửi lại mã mới
+        
+        String resendSuccessMsg = "Mã OTP mới đã được gửi thành công đến email. (Đã gửi lại " + resendCount + "/5 lần)";
+        if (isAjax) {
+            resp.setContentType("application/json;charset=UTF-8");
+            resp.getWriter().write("{\"success\": true, \"thongbao\": \"" + resendSuccessMsg + "\", \"resendCount\": " + resendCount + "}");
+            return;
+        }
+
+        req.setAttribute("email", email);
+        req.setAttribute("thongbao", resendSuccessMsg);
+        req.getRequestDispatcher("/auth/NhapMa.jsp").forward(req, resp);
+    }
+}
+
