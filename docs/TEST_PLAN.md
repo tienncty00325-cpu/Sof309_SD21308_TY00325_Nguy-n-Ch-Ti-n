@@ -1,13 +1,6 @@
 # KẾ HOẠCH KIỂM THỬ (TEST PLAN)
 
-## Thông tin tài liệu
-- **Dự án**: Hệ thống Quản lý và Đặt sân Thể thao Trực tuyến **V-SPORT**
-- **Môn học**: Kiểm thử nâng cao (SOF309)
-- **Người lập kế hoạch**: Nguyễn Chí Tiến — **MSSV**: TY00325 — **Lớp**: SD21308
-- **Phiên bản**: 1.0
-- **Ngày lập**: 11/11/2026
 
----
 
 ## 1. Mục tiêu kiểm thử (Test Objectives)
 1. Đảm bảo các nghiệp vụ cốt lõi của hệ thống **V-SPORT** (Xác thực người dùng, Chuẩn hóa dữ liệu SĐT/Thời gian, Tính giá sân theo khung giờ có đèn/không đèn, Tính tiền cọc & thanh toán, Điểm uy tín khách hàng, Đặt sân & Hoàn tiền) hoạt động chính xác theo đặc tả trong [`SPECIFICATIONS.md`](file:///c:/Users/Admin/Documents/GitHub/Sof309_SD21308_TY00325_Nguy-n-Ch-Ti-n/docs/SPECIFICATIONS.md).

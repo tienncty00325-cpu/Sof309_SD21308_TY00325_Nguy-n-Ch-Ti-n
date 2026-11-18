@@ -1,1719 +1,1002 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="org.example.model.TaiKhoan" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.petcare.controller.HomeServlet" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%
+    if (request.getAttribute("services") == null) {
+        request.setAttribute("services", HomeServlet.buildDefaultServices());
+    }
+    if (request.getAttribute("reviews") == null) {
+        request.setAttribute("reviews", HomeServlet.buildDefaultReviews());
+    }
+%>
 <!DOCTYPE html>
-<html lang="en">
-<jsp:include page="/common/xtra-head.jsp" />
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pet care — Dịch Vụ Chăm Sóc &amp; Spa Thú Cưng Chuyên Nghiệp Tận Tâm</title>
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/logo.png?v=4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/home.css?v=15" />
+</head>
 <body>
 
-    <!-- Header -->
-    <jsp:include page="/common/header-xtra.jsp" />
+    <!-- ====================================================================
+         1. TOP HEADER / NAVBAR (Sticky, 76px, Modern Premium)
+         ==================================================================== -->
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="${pageContext.request.contextPath}/home" class="brand-wrap" aria-label="Pet care — Trang chủ">
+                <span class="brand-icon-box">
+                    <img src="${pageContext.request.contextPath}/assets/images/logo.png?v=4" alt="PetCare Logo" class="brand-logo-img" />
+                </span>
+            </a>
 
-<%
-    String authParam = request.getParameter("auth");
-    boolean isAuthTab = authParam != null && !authParam.isEmpty();
-%>
-    <main>
-        <div id="homeView" class="page-view <%= isAuthTab ? "" : "active" %>">
+            <nav class="main-nav" aria-label="Điều hướng chính">
+                <a href="${pageContext.request.contextPath}/home" class="active">Trang chủ</a>
+                <a href="${pageContext.request.contextPath}/branches.jsp">Giới thiệu &amp; Cơ sở</a>
+                <a href="${pageContext.request.contextPath}/services.jsp">Bảng giá &amp; Dịch vụ</a>
+                <a href="#quy-trinh-section">Quy trình chăm sóc</a>
+                <a href="#quyen-loi-section">Tra cứu &amp; Hướng dẫn</a>
+            </nav>
 
-        <!-- ═══ ANNOUNCEMENT BAR ═══ -->
-        <div class="vs-ann-bar" role="region" aria-label="Thông báo">
-            <div class="vs-ann-bar__track">
-                <span class="vs-ann-bar__msg is-active">Đặt sân lần đầu — nhận ưu đãi đến 10% tại các cơ sở áp dụng.</span>
-                <span class="vs-ann-bar__msg">Đặt sân nhanh, xác nhận rõ ràng — không chờ đợi, không lo lắng.</span>
-                <span class="vs-ann-bar__msg">Ghép kèo cùng cộng đồng thể thao — tìm đồng đội ngay hôm nay!</span>
+            <div class="header-auth-actions">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.loggedInUser}">
+                        <div class="header-user-wrap">
+                            <div class="header-user-trigger">
+                                <a href="${pageContext.request.contextPath}/profile" class="header-user-pill">
+                                    <span class="header-user-avatar-circle">
+                                        ${fn:toUpperCase(fn:substring(fn:trim(sessionScope.loggedInUser), 0, 1))}
+                                    </span>
+                                    <span class="header-user-info">
+                                        <span class="header-user-name">${sessionScope.loggedInUser}</span>
+                                        <span class="header-user-role-tag">
+                                            <c:choose>
+                                                <c:when test="${sessionScope.loggedInRole == 'ADMIN'}">Quản trị viên</c:when>
+                                                <c:when test="${sessionScope.loggedInRole == 'STAFF'}">Nhân viên</c:when>
+                                                <c:otherwise>Thành viên</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </span>
+                                    <svg class="header-user-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </a>
+
+                                <div class="header-user-dropdown">
+                                    <div class="dropdown-user-head">
+                                        <span class="dropdown-user-avatar">
+                                            ${fn:toUpperCase(fn:substring(fn:trim(sessionScope.loggedInUser), 0, 1))}
+                                        </span>
+                                        <div class="dropdown-user-meta">
+                                            <strong>${sessionScope.loggedInUser}</strong>
+                                            <span>Mã TV #${sessionScope.loggedInUserId} &bull; ${sessionScope.loggedInRole}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="dropdown-meta-list">
+                                        <div class="dropdown-meta-row">
+                                            <span>Mã tài khoản</span>
+                                            <strong>#${sessionScope.loggedInUserId}</strong>
+                                        </div>
+                                        <div class="dropdown-meta-row">
+                                            <span>Điện thoại</span>
+                                            <strong>${sessionScope.loggedInPhone}</strong>
+                                        </div>
+                                        <div class="dropdown-meta-row">
+                                            <span>Email</span>
+                                            <strong>${sessionScope.loggedInEmail}</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="dropdown-menu-actions">
+                                        <a href="${pageContext.request.contextPath}/profile" class="dropdown-menu-link">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
+                                            <span>Hồ sơ &amp; Đổi mật khẩu</span>
+                                        </a>
+                                        <a href="${pageContext.request.contextPath}/logout" class="dropdown-menu-link logout-link">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                                <polyline points="16 17 21 12 16 7"></polyline>
+                                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                                            </svg>
+                                            <span>Đăng xuất tài khoản</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="${pageContext.request.contextPath}/logout" class="btn-header-logout" title="Đăng xuất">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${pageContext.request.contextPath}/login" class="btn-login-outline">Đăng nhập</a>
+                        <a href="${pageContext.request.contextPath}/register" class="btn-register-solid">Đăng ký tài khoản</a>
+                        <a href="${pageContext.request.contextPath}/login" class="btn-user-avatar" aria-label="Tài khoản">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </a>
+                    </c:otherwise>
+                </c:choose>
+                <button type="button" class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Mở menu" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
             </div>
-            <button class="vs-ann-bar__close" aria-label="Đóng">&times;</button>
         </div>
+    </header>
 
-        <div class="vs-commerce-home">
-
-        <!-- ═══ HERO SLIDER ═══ -->
-        <section class="vs-hero" aria-label="Trang chủ V-SPORT">
-            <div class="vs-hero__track">
-
-                <!-- Slide 1 – Sân bóng đá -->
-                <div class="vs-slide is-active">
-                    <div class="vs-slide__content">
-                        <span class="vs-slide__eyebrow">Nền tảng thể thao số 1</span>
-                        <h1 class="vs-slide__title">Đặt Sân Nhanh<br>Chơi Ngay Hôm Nay</h1>
-                        <p class="vs-slide__desc">Hàng trăm sân bóng đá, cầu lông, pickleball chất lượng cao — đặt sân chỉ trong 30 giây, xác nhận tức thì.</p>
-                        <div class="vs-slide__actions">
-                            <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-slide__cta">
-                                Đặt sân ngay
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                            </a>
-                            <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-slide__cta vs-slide__cta--ghost">Tìm đối thủ</a>
-                        </div>
-                        <div class="vs-hero__stats">
-                            <div class="vs-hero__stat">
-                                <div class="vs-hero__stat-label"><span class="vs-hero__stat-dot"></span>Sân đã đặt hôm nay</div>
-                                <div class="vs-hero__stat-value"><span>1</span><span>2</span><span>0</span><span>4</span></div>
-                            </div>
-                            <div class="vs-hero__stat vs-hero__stat--warn">
-                                <div class="vs-hero__stat-label"><span class="vs-hero__stat-dot"></span>Trận đang diễn ra</div>
-                                <div class="vs-hero__stat-value"><span>1</span><span>2</span><span>8</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-slide__bg">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-football.jpg" alt="Sân bóng đá V-SPORT" loading="eager">
-                        <div class="vs-slide__overlay"></div>
-                    </div>
+    <!-- ====================================================================
+         2. SUBTLE GUEST MODE BAR (Guests only)
+         ==================================================================== -->
+    <c:if test="${empty sessionScope.currentUser}">
+        <div class="guest-alert-bar">
+            <div class="container guest-alert-inner">
+                <div class="guest-alert-text">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>
+                        <strong>Chế độ Khách (Chưa đăng nhập):</strong>
+                        Đăng nhập hoặc mở tài khoản để tự động lưu hồ sơ bé cưng và lịch chăm sóc định kỳ.
+                    </span>
                 </div>
-
-                <!-- Slide 2 – Cộng đồng -->
-                <div class="vs-slide">
-                    <div class="vs-slide__content">
-                        <span class="vs-slide__eyebrow">Cộng đồng thể thao</span>
-                        <h1 class="vs-slide__title">Ghép Kèo<br>Kết Nối Đồng Đội</h1>
-                        <p class="vs-slide__desc">Không đủ người? Tìm ngay đối thủ hoặc đồng đội phù hợp trình độ, gần khu vực của bạn chỉ với vài cú chạm.</p>
-                        <div class="vs-slide__actions">
-                            <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-slide__cta">
-                                Ghép kèo ngay
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                            </a>
-                            <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-slide__cta vs-slide__cta--ghost">Đặt sân ngay</a>
-                        </div>
-                        <div class="vs-hero__stats">
-                            <div class="vs-hero__stat">
-                                <div class="vs-hero__stat-label"><span class="vs-hero__stat-dot"></span>Sân đã đặt hôm nay</div>
-                                <div class="vs-hero__stat-value"><span>1</span><span>2</span><span>0</span><span>4</span></div>
-                            </div>
-                            <div class="vs-hero__stat vs-hero__stat--warn">
-                                <div class="vs-hero__stat-label"><span class="vs-hero__stat-dot"></span>Trận đang diễn ra</div>
-                                <div class="vs-hero__stat-value"><span>1</span><span>2</span><span>8</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-slide__bg">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/experience/experience-playing.jpg" alt="Cộng đồng V-SPORT" loading="lazy">
-                        <div class="vs-slide__overlay"></div>
-                    </div>
-                </div>
-
-                <!-- Slide 3 – Cầu lông -->
-                <div class="vs-slide">
-                    <div class="vs-slide__content">
-                        <span class="vs-slide__eyebrow">Khám phá hệ thống sân</span>
-                        <h1 class="vs-slide__title">Đa Dạng Bộ Môn<br>Đẳng Cấp Dịch Vụ</h1>
-                        <p class="vs-slide__desc">Từ bóng đá, cầu lông đến pickleball — hệ thống sân trải dài khắp thành phố, sẵn sàng cho mọi lịch trình của bạn.</p>
-                        <div class="vs-slide__actions">
-                            <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-slide__cta">
-                                Khám phá ngay
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                            </a>
-                            <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-slide__cta vs-slide__cta--ghost">Tìm đối thủ</a>
-                        </div>
-                        <div class="vs-hero__stats">
-                            <div class="vs-hero__stat">
-                                <div class="vs-hero__stat-label"><span class="vs-hero__stat-dot"></span>Sân đã đặt hôm nay</div>
-                                <div class="vs-hero__stat-value"><span>1</span><span>2</span><span>0</span><span>4</span></div>
-                            </div>
-                            <div class="vs-hero__stat vs-hero__stat--warn">
-                                <div class="vs-hero__stat-label"><span class="vs-hero__stat-dot"></span>Trận đang diễn ra</div>
-                                <div class="vs-hero__stat-value"><span>1</span><span>2</span><span>8</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-slide__bg">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-badminton.jpg" alt="Sân cầu lông V-SPORT" loading="lazy">
-                        <div class="vs-slide__overlay"></div>
-                    </div>
+                <div class="guest-alert-btns">
+                    <a href="${pageContext.request.contextPath}/login" class="btn-guest-white">Đăng nhập</a>
+                    <a href="${pageContext.request.contextPath}/register" class="btn-guest-green">Tạo tài khoản miễn phí</a>
                 </div>
             </div>
+        </div>
+    </c:if>
 
-            <!-- Dots -->
-            <div class="vs-hero__dots" role="tablist" aria-label="Điều hướng slider">
-                <button class="vs-hero__dot is-active" role="tab" aria-selected="true" aria-label="Slide 1"></button>
-                <button class="vs-hero__dot" role="tab" aria-selected="false" aria-label="Slide 2"></button>
-                <button class="vs-hero__dot" role="tab" aria-selected="false" aria-label="Slide 3"></button>
-            </div>
+    <main id="trang-chu" class="petpy-main petpy-v13-green">
 
-            <!-- Arrows -->
-            <button class="vs-hero__arrow vs-hero__arrow--l" aria-label="Slide trước">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button class="vs-hero__arrow vs-hero__arrow--r" aria-label="Slide tiếp">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-        </section>
+        <!-- ================================================================
+             3. HERO SECTION (Petpy Collage Layout + Pet Care Forest Green Theme)
+             ================================================================ -->
+        <section class="petpy-hero petpy-section-rel">
+            <svg class="petpy-paw-bg" style="top:34px;left:43%;width:30px;height:30px;transform:rotate(-15deg);" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+            </svg>
+            <svg class="petpy-paw-bg" style="bottom:20px;left:36%;width:38px;height:38px;transform:rotate(18deg);" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+            </svg>
 
-        <!-- ═══ PRODUCTS & SERVICES ═══ -->
-        <section class="vs-products-section vs-reveal" aria-label="Sản phẩm nổi bật">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Sản phẩm &amp; <span>dịch vụ nổi bật</span></h2>
-                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-section-link">Xem tất cả
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </a>
+            <div class="container petpy-hero-grid">
+                <div class="petpy-hero-left reveal-up">
+                    <div class="hero-pill-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l2.4 2.1 3.1-.4 1.2 2.9 2.9 1.2-.4 3.1L23.3 13l-2.1 2.4.4 3.1-2.9 1.2-1.2 2.9-3.1-.4L12 24.3l-2.4-2.1-3.1.4-1.2-2.9-2.9-1.2.4-3.1L.7 13l2.1-2.4-.4-3.1 2.9-1.2 1.2-2.9 3.1.4L12 2zm-1.2 13.6l5.4-5.4-1.4-1.4-4 4-2-2-1.4 1.4 3.4 3.4z"/>
+                        </svg>
+                        <span>SPA &amp; GROOMING THÚ CƯNG CHUẨN QUỐC TẾ</span>
+                    </div>
+
+                    <h1 class="petpy-hero-title">
+                        <span>Dịch Vụ Chăm Sóc</span><br/>
+                        <span class="petpy-title-line">
+                            <span>Cho</span>
+                            <span class="petpy-inline-dog-pill">
+                                <img src="${pageContext.request.contextPath}/assets/images/review-dog-bo.jpg" alt="Cún cưng đáng yêu tại Pet care" />
+                            </span>
+                            <span>Bé Cưng</span>
+                        </span>
+                        <span class="highlight-green-brand">Chuyên Nghiệp Tận Tâm</span>
+                    </h1>
+
+                    <p class="petpy-hero-desc">
+                        Trải nghiệm dịch vụ tắm spa thảo mộc Organic, cắt tỉa tạo kiểu chuẩn Salon và lưu trú phòng kính 360&deg;
+                        với đội ngũ chuyên viên tận tâm, yêu thương từng bé cưng.
+                    </p>
+
+                    <div class="petpy-hero-cta">
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.currentUser or not empty sessionScope.loggedInUser}">
+                                <button type="button" class="btn-hero-primary" data-open-booking="Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện">
+                                    <span>Đặt lịch chăm sóc ngay</span>
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                                <a href="#bang-gia-section" class="petpy-link-more">
+                                    XEM BẢNG GIÁ &amp; DỊCH VỤ &rsaquo;
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <button type="button" class="btn-hero-primary" data-open-booking="Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện">
+                                    <span>Đặt lịch giữ chỗ ngay</span>
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                                <a href="#bang-gia-section" class="petpy-link-more">
+                                    XEM BẢNG GIÁ &amp; DỊCH VỤ &rsaquo;
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="hero-trust-notes">
+                        <span class="hero-trust-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Mỹ phẩm thảo mộc Organic 100%
+                        </span>
+                        <span class="hero-trust-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Phòng kính tiệt trùng UV chuẩn quốc tế
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Pill tabs -->
-                <div class="vs-tabs-row" role="tablist">
-                    <button class="vs-pill is-active" data-tab="all" role="tab">Tất cả</button>
-                    <button class="vs-pill" data-tab="dungcu" role="tab">Dụng cụ</button>
-                    <button class="vs-pill" data-tab="trangphuc" role="tab">Trang phục</button>
-                    <button class="vs-pill" data-tab="dichvu" role="tab">Dịch vụ</button>
-                    <button class="vs-pill" data-tab="phukien" role="tab">Phụ kiện</button>
-                </div>
+                <div class="petpy-collage hero-art-collage reveal-up">
+                    <svg class="art-deco-paw paw-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                        <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+                    </svg>
+                    <svg class="art-deco-paw paw-2" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                        <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+                    </svg>
 
-                <!-- Panel: All -->
-                <div class="vs-carousel-wrap">
-                    <div class="vs-tab-panel" data-panel="all">
-                        <div class="vs-carousel" id="productCarouselAll">
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/pickleball.jpg" alt="Vợt Pickleball Carbon Pro" loading="lazy">
-                                    <span class="vs-product-card__badge">Hot</span>
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Pickleball</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball">Vợt Pickleball Carbon Pro</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> <span style="color:var(--vs-muted);font-size:12px">(48)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">1.290.000đ</span>
-                                        <span class="vs-product-card__price-old">1.590.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/badminton.jpg" alt="Giày cầu lông chống trượt" loading="lazy">
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Cầu lông</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Cầu lông">Giày cầu lông chống trượt</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> <span style="color:var(--vs-muted);font-size:12px">(72)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">890.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Cầu lông" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/football.jpg" alt="Bóng đá tiêu chuẩn Size 5" loading="lazy">
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Bóng đá</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng đá">Bóng đá tiêu chuẩn Size 5</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i> <span style="color:var(--vs-muted);font-size:12px">(35)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">350.000đ</span>
-                                        <span class="vs-product-card__price-old">420.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng đá" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-04.jpg" alt="Áo thể thao V-SPORT Dry Fit" loading="lazy">
-                                    <span class="vs-product-card__badge">Mới</span>
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Trang phục</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Áo thể thao V-SPORT Dry Fit</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> <span style="color:var(--vs-muted);font-size:12px">(61)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">249.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/tennis.jpg" alt="Túi đựng vợt đa năng" loading="lazy">
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Phụ kiện</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis">Túi đựng vợt đa năng</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i> <span style="color:var(--vs-muted);font-size:12px">(29)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">459.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-pickleball.jpg" alt="Thuê vợt tại cơ sở" loading="lazy">
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Dịch vụ</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Thuê vợt tại cơ sở</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> <span style="color:var(--vs-muted);font-size:12px">(114)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">Từ 30.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem tại cơ sở</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-05.jpg" alt="Huấn luyện viên cá nhân" loading="lazy">
-                                    <span class="vs-product-card__badge">HOT</span>
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Dịch vụ</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Huấn luyện viên cá nhân</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> <span style="color:var(--vs-muted);font-size:12px">(88)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">Từ 200.000đ/buổi</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem tại cơ sở</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/basketball.jpg" alt="Bình nước thể thao 750ml" loading="lazy">
-                                    <button class="vs-product-card__fav" aria-label="Yêu thích"><i class="far fa-heart"></i></button>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Phụ kiện</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Bình nước thể thao 750ml</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i> <span style="color:var(--vs-muted);font-size:12px">(55)</span></div>
-                                    <div class="vs-product-card__price-row">
-                                        <span class="vs-product-card__price">159.000đ</span>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="art-photo-card art-photo-card-top">
+                        <img src="${pageContext.request.contextPath}/assets/images/hero-petcare-spa.jpg" alt="Chuyên viên Grooming chăm sóc cún cưng tại Pet care" />
+                        <span class="art-mini-pill top-pill">&#9733; 4.9 &bull; Spa Organic</span>
                     </div>
 
-                    <!-- Panel: Dụng cụ -->
-                    <div class="vs-tab-panel" data-panel="dungcu" hidden>
-                        <div class="vs-carousel">
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/pickleball.jpg" alt="Vợt Pickleball Carbon Pro" loading="lazy">
-                                    <span class="vs-product-card__badge">Hot</span>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Pickleball</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball">Vợt Pickleball Carbon Pro</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">1.290.000đ</span><span class="vs-product-card__price-old">1.590.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/football.jpg" alt="Bóng đá Size 5" loading="lazy">
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Bóng đá</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng đá">Bóng đá tiêu chuẩn Size 5</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">350.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng đá" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" class="art-badge-24h" data-open-booking="Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện">
+                        <strong>24/7</strong>
+                        <span>Hỗ trợ giữ chỗ</span>
+                    </button>
 
-                    <!-- Panel: Trang phục -->
-                    <div class="vs-tab-panel" data-panel="trangphuc" hidden>
-                        <div class="vs-carousel">
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-04.jpg" alt="Áo Dry Fit" loading="lazy">
-                                    <span class="vs-product-card__badge">Mới</span>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Trang phục</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Áo thể thao V-SPORT Dry Fit</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">249.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-06.jpg" alt="Quần short thể thao" loading="lazy">
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Trang phục</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Quần short thể thao V-SPORT</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">189.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" class="art-stamp-circle" data-open-booking="Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện" aria-label="Đặt lịch nhanh Pet care">
+                        <svg class="petpy-stamp-ring" viewBox="0 0 120 120" aria-hidden="true">
+                            <defs>
+                                <path id="artStampPath" d="M 60, 60 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" />
+                            </defs>
+                            <text fill="#E8FBF2" font-size="8.6" font-weight="800" letter-spacing="2.3">
+                                <textPath href="#artStampPath">&bull; PET CARE SPA &bull; GROOMING &amp; RELAX </textPath>
+                            </text>
+                        </svg>
+                        <svg class="art-stamp-paw" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="7" cy="7.5" r="1.7"/>
+                            <circle cx="12" cy="5.5" r="1.7"/>
+                            <circle cx="17" cy="7.5" r="1.7"/>
+                            <path d="M12 11.5c-3 0-5.4 2.1-5.4 4.7 0 1.7 1.4 3 3.2 3 .9 0 1.5-.3 2.2-.3s1.3.3 2.2.3c1.8 0 3.2-1.3 3.2-3 0-2.6-2.4-4.7-5.4-4.7z"/>
+                        </svg>
+                    </button>
 
-                    <!-- Panel: Dịch vụ -->
-                    <div class="vs-tab-panel" data-panel="dichvu" hidden>
-                        <div class="vs-carousel">
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-pickleball.jpg" alt="Thuê vợt" loading="lazy">
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Dịch vụ</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Thuê vợt tại cơ sở</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">Từ 30.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem tại cơ sở</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-05.jpg" alt="HLV cá nhân" loading="lazy">
-                                    <span class="vs-product-card__badge">HOT</span>
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Dịch vụ</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Huấn luyện viên cá nhân</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">Từ 200.000đ/buổi</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem tại cơ sở</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Panel: Phụ kiện -->
-                    <div class="vs-tab-panel" data-panel="phukien" hidden>
-                        <div class="vs-carousel">
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/tennis.jpg" alt="Túi vợt" loading="lazy">
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Phụ kiện</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis">Túi đựng vợt đa năng</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">459.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                            <div class="vs-product-card">
-                                <div class="vs-product-card__img-wrap">
-                                    <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/basketball.jpg" alt="Bình nước" loading="lazy">
-                                </div>
-                                <div class="vs-product-card__body">
-                                    <div class="vs-product-card__cat">Phụ kiện</div>
-                                    <h3 class="vs-product-card__name"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Bình nước thể thao 750ml</a></h3>
-                                    <div class="vs-product-card__stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                                    <div class="vs-product-card__price-row"><span class="vs-product-card__price">159.000đ</span></div>
-                                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-product-card__cta"><i class="fas fa-eye"></i> Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="vs-c-arrows">
-                        <button class="vs-c-arrow vs-c-arrow--l" aria-label="Trước"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-                        <button class="vs-c-arrow vs-c-arrow--r" aria-label="Tiếp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    <div class="art-photo-card art-photo-card-bottom">
+                        <img src="${pageContext.request.contextPath}/assets/images/service-grooming.jpg" alt="Cắt tỉa tạo kiểu Salon Hàn Nhật tại Pet care" />
+                        <span class="art-mini-pill bottom-pill">&#9986; Salon Hàn - Nhật</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ═══ CATEGORY DISCOVERY ═══ -->
-        <section class="vs-cats-section vs-reveal" aria-label="Khám phá môn thể thao">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Khám phá <span>môn thể thao</span></h2>
-                    <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-section-link">Xem tất cả sân</a>
-                </div>
-                <div class="vs-cats-layout">
-                    <!-- Sidebar list -->
-                    <div class="vs-cat-list">
-                        <p class="vs-cat-list__title">Chọn môn bạn yêu thích</p>
-                        <div class="vs-cat-item is-active" data-cat="football" data-title="Sân Bóng đá" data-sub="70+ sân tại Vũng Tàu & khu vực lân cận" data-link="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng đá" role="button" tabindex="0">
-                            <span class="vs-cat-item__label"><i class="fas fa-futbol" style="margin-right:10px;color:var(--vs-sage)"></i>Bóng đá</span>
-                            <span class="vs-cat-item__arrow"><i class="fas fa-chevron-right"></i></span>
-                        </div>
-                        <div class="vs-cat-item" data-cat="badminton" data-title="Sân Cầu lông" data-sub="85+ sân có mái che, đèn chiếu sáng" data-link="${pageContext.request.contextPath}/customer/tim-kiem?q=Cầu lông" role="button" tabindex="0">
-                            <span class="vs-cat-item__label"><i class="fas fa-table-tennis-paddle-ball" style="margin-right:10px;color:var(--vs-sage)"></i>Cầu lông</span>
-                            <span class="vs-cat-item__arrow"><i class="fas fa-chevron-right"></i></span>
-                        </div>
-                        <div class="vs-cat-item" data-cat="pickleball" data-title="Sân Pickleball" data-sub="40+ sân tiêu chuẩn, cho thuê vợt tại chỗ" data-link="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball" role="button" tabindex="0">
-                            <span class="vs-cat-item__label"><i class="fas fa-circle-dot" style="margin-right:10px;color:var(--vs-sage)"></i>Pickleball</span>
-                            <span class="vs-cat-item__arrow"><i class="fas fa-chevron-right"></i></span>
-                        </div>
-                        <div class="vs-cat-item" data-cat="tennis" data-title="Sân Tennis" data-sub="30+ sân đất nện và sân cứng" data-link="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis" role="button" tabindex="0">
-                            <span class="vs-cat-item__label"><i class="fas fa-baseball-bat-ball" style="margin-right:10px;color:var(--vs-sage)"></i>Tennis</span>
-                            <span class="vs-cat-item__arrow"><i class="fas fa-chevron-right"></i></span>
-                        </div>
-                        <div class="vs-cat-item" data-cat="basketball" data-title="Sân Bóng rổ" data-sub="20+ sân trong nhà & ngoài trời" data-link="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng rổ" role="button" tabindex="0">
-                            <span class="vs-cat-item__label"><i class="fas fa-basketball" style="margin-right:10px;color:var(--vs-sage)"></i>Bóng rổ</span>
-                            <span class="vs-cat-item__arrow"><i class="fas fa-chevron-right"></i></span>
-                        </div>
-                        <div class="vs-cat-item" data-cat="volleyball" data-title="Sân Bóng chuyền" data-sub="15+ sân bãi biển & trong nhà" data-link="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng chuyền" role="button" tabindex="0">
-                            <span class="vs-cat-item__label"><i class="fas fa-volleyball" style="margin-right:10px;color:var(--vs-sage)"></i>Bóng chuyền</span>
-                            <span class="vs-cat-item__arrow"><i class="fas fa-chevron-right"></i></span>
-                        </div>
-                    </div>
-
-                    <!-- Image panel -->
-                    <div class="vs-cat-panel" role="img">
-                        <div class="vs-cat-panel__img is-visible" data-cat="football">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-football.jpg" alt="Sân bóng đá" loading="lazy">
-                        </div>
-                        <div class="vs-cat-panel__img" data-cat="badminton">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-badminton.jpg" alt="Sân cầu lông" loading="lazy">
-                        </div>
-                        <div class="vs-cat-panel__img" data-cat="pickleball">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-pickleball.jpg" alt="Sân Pickleball" loading="lazy">
-                        </div>
-                        <div class="vs-cat-panel__img" data-cat="tennis">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-tennis.jpg" alt="Sân Tennis" loading="lazy">
-                        </div>
-                        <div class="vs-cat-panel__img" data-cat="basketball">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/basketball.jpg" alt="Sân Bóng rổ" loading="lazy">
-                        </div>
-                        <div class="vs-cat-panel__img" data-cat="volleyball">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/volleyball.jpg" alt="Sân Bóng chuyền" loading="lazy">
-                        </div>
-                        <div class="vs-cat-panel__overlay">
-                            <h3 class="vs-cat-panel__title" id="catPanelTitle">Sân Bóng đá</h3>
-                            <p class="vs-cat-panel__sub" id="catPanelSub">70+ sân tại Vũng Tàu & khu vực lân cận</p>
-                            <a class="vs-cat-panel__btn" id="catPanelLink" href="${pageContext.request.contextPath}/customer/tim-kiem?q=Bóng đá">
-                                Xem sân ngay <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ WHY V-SPORT ═══ -->
-        <section class="vs-why-section" aria-label="Vì sao chọn V-SPORT">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Vì sao chọn <span>V-SPORT?</span></h2>
-                </div>
-                <div class="vs-why-grid">
-                    <div class="vs-why-card vs-reveal vs-reveal--delay-1">
-                        <div class="vs-why-card__icon"><i class="fas fa-calendar-check"></i></div>
-                        <h3 class="vs-why-card__title">Đặt sân nhanh chóng</h3>
-                        <p class="vs-why-card__desc">Chọn môn, khu vực, khung giờ và xác nhận trong vài phút. Không cần gọi điện, không phải chờ đợi.</p>
-                    </div>
-                    <div class="vs-why-card vs-reveal vs-reveal--delay-2">
-                        <div class="vs-why-card__icon"><i class="fas fa-shield-halved"></i></div>
-                        <h3 class="vs-why-card__title">Thanh toán an toàn</h3>
-                        <p class="vs-why-card__desc">Hỗ trợ thanh toán trực tuyến và tiền mặt. Mọi giao dịch được mã hóa và bảo mật tuyệt đối.</p>
-                    </div>
-                    <div class="vs-why-card vs-reveal vs-reveal--delay-3">
-                        <div class="vs-why-card__icon"><i class="fas fa-users"></i></div>
-                        <h3 class="vs-why-card__title">Ghép kèo thông minh</h3>
-                        <p class="vs-why-card__desc">Tìm đồng đội cùng trình độ, cùng môn và khung giờ phù hợp. Không bao giờ thiếu người chơi.</p>
-                    </div>
-                    <div class="vs-why-card vs-reveal vs-reveal--delay-4">
-                        <div class="vs-why-card__icon"><i class="fas fa-headset"></i></div>
-                        <h3 class="vs-why-card__title">Hỗ trợ tận tâm</h3>
-                        <p class="vs-why-card__desc">Đội ngũ V-SPORT luôn sẵn sàng hỗ trợ bạn trước, trong và sau khi đặt sân. 7 ngày/tuần.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ COURTS CAROUSEL ═══ -->
-        <section class="vs-courts-section vs-reveal" aria-label="Sân nổi bật">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Sân <span>được đặt nhiều nhất</span></h2>
-                    <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-section-link">Xem tất cả sân</a>
-                </div>
-                <div class="vs-carousel-wrap">
-                    <div class="vs-carousel" id="courtCarousel">
-                        <div class="vs-court-card">
-                            <div class="vs-court-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-badminton.jpg" alt="Sân cầu lông" loading="lazy">
-                                <span class="vs-court-card__status">Còn sân</span>
-                            </div>
-                            <div class="vs-court-card__body">
-                                <div class="vs-court-card__sport"><i class="fas fa-table-tennis-paddle-ball"></i> Cầu lông</div>
-                                <h3 class="vs-court-card__name">Trung tâm Cầu lông Vũng Tàu</h3>
-                                <div class="vs-court-card__addr"><i class="fas fa-location-dot"></i> 12 Lê Lợi, P.1, Vũng Tàu</div>
-                                <div class="vs-court-card__meta">
-                                    <span class="vs-court-card__rating"><i class="fas fa-star"></i> 4.9 <span style="color:var(--vs-muted);font-weight:400">(128 đánh giá)</span></span>
-                                    <span class="vs-court-card__price">Từ 80.000đ/h</span>
-                                </div>
-                                <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-court-card__cta">Đặt sân ngay</a>
-                            </div>
-                        </div>
-                        <div class="vs-court-card">
-                            <div class="vs-court-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-football.jpg" alt="Sân bóng đá" loading="lazy">
-                                <span class="vs-court-card__status">Còn sân</span>
-                            </div>
-                            <div class="vs-court-card__body">
-                                <div class="vs-court-card__sport"><i class="fas fa-futbol"></i> Bóng đá</div>
-                                <h3 class="vs-court-card__name">Sân bóng đá Thành Công</h3>
-                                <div class="vs-court-card__addr"><i class="fas fa-location-dot"></i> 55 Trương Công Định, Vũng Tàu</div>
-                                <div class="vs-court-card__meta">
-                                    <span class="vs-court-card__rating"><i class="fas fa-star"></i> 4.8 <span style="color:var(--vs-muted);font-weight:400">(96 đánh giá)</span></span>
-                                    <span class="vs-court-card__price">Từ 200.000đ/h</span>
-                                </div>
-                                <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-court-card__cta">Đặt sân ngay</a>
-                            </div>
-                        </div>
-                        <div class="vs-court-card">
-                            <div class="vs-court-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-pickleball.jpg" alt="Sân Pickleball" loading="lazy">
-                                <span class="vs-court-card__status">Còn sân</span>
-                            </div>
-                            <div class="vs-court-card__body">
-                                <div class="vs-court-card__sport"><i class="fas fa-circle-dot"></i> Pickleball</div>
-                                <h3 class="vs-court-card__name">Sân Pickleball Long Điền</h3>
-                                <div class="vs-court-card__addr"><i class="fas fa-location-dot"></i> 28 Lý Thường Kiệt, Long Điền</div>
-                                <div class="vs-court-card__meta">
-                                    <span class="vs-court-card__rating"><i class="fas fa-star"></i> 4.7 <span style="color:var(--vs-muted);font-weight:400">(74 đánh giá)</span></span>
-                                    <span class="vs-court-card__price">Từ 60.000đ/h</span>
-                                </div>
-                                <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-court-card__cta">Đặt sân ngay</a>
-                            </div>
-                        </div>
-                        <div class="vs-court-card">
-                            <div class="vs-court-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-tennis.jpg" alt="Sân Tennis" loading="lazy">
-                                <span class="vs-court-card__status">Còn sân</span>
-                            </div>
-                            <div class="vs-court-card__body">
-                                <div class="vs-court-card__sport"><i class="fas fa-baseball-bat-ball"></i> Tennis</div>
-                                <h3 class="vs-court-card__name">Sân Tennis Trung Tâm</h3>
-                                <div class="vs-court-card__addr"><i class="fas fa-location-dot"></i> 8 Nguyễn Trãi, P.7, Vũng Tàu</div>
-                                <div class="vs-court-card__meta">
-                                    <span class="vs-court-card__rating"><i class="fas fa-star"></i> 4.8 <span style="color:var(--vs-muted);font-weight:400">(52 đánh giá)</span></span>
-                                    <span class="vs-court-card__price">Từ 120.000đ/h</span>
-                                </div>
-                                <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-court-card__cta">Đặt sân ngay</a>
-                            </div>
-                        </div>
-                        <div class="vs-court-card">
-                            <div class="vs-court-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/basketball.jpg" alt="Sân bóng rổ" loading="lazy">
-                                <span class="vs-court-card__status">Còn sân</span>
-                            </div>
-                            <div class="vs-court-card__body">
-                                <div class="vs-court-card__sport"><i class="fas fa-basketball"></i> Bóng rổ</div>
-                                <h3 class="vs-court-card__name">Sân Bóng rổ V-Arena</h3>
-                                <div class="vs-court-card__addr"><i class="fas fa-location-dot"></i> 44 Hoàng Diệu, P.5, Vũng Tàu</div>
-                                <div class="vs-court-card__meta">
-                                    <span class="vs-court-card__rating"><i class="fas fa-star"></i> 4.6 <span style="color:var(--vs-muted);font-weight:400">(41 đánh giá)</span></span>
-                                    <span class="vs-court-card__price">Từ 90.000đ/h</span>
-                                </div>
-                                <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-court-card__cta">Đặt sân ngay</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-c-arrows">
-                        <button class="vs-c-arrow vs-c-arrow--l" aria-label="Trước"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-                        <button class="vs-c-arrow vs-c-arrow--r" aria-label="Tiếp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ HOW IT WORKS ═══ -->
-        <section class="vs-howto-section" aria-label="Cách thức hoạt động">
-            <div class="vs-container">
-                <h2 class="vs-section-title" style="color:#fff;margin-bottom:0">Đặt sân chỉ trong <span style="color:var(--vs-sage)">4 bước đơn giản</span></h2>
-                <div class="vs-howto-layout">
-                    <!-- Visual side -->
-                    <div class="vs-howto-img-wrap">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/experience/experience-booking.jpg" data-step="1" class="is-visible" alt="Tìm kiếm sân" loading="lazy">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/experience/experience-payment.jpg" data-step="2" alt="Thanh toán" loading="lazy">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/experience/experience-checkin.jpg" data-step="3" alt="Check in" loading="lazy">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/experience/experience-playing.jpg" data-step="4" alt="Thi đấu" loading="lazy">
-                    </div>
-
-                    <!-- Steps -->
-                    <div class="vs-howto-steps">
-                        <div class="vs-howto-step is-active" data-step="1">
-                            <div class="vs-howto-step__num">1</div>
-                            <div class="vs-howto-step__text">
-                                <h3 class="vs-howto-step__title">Tìm sân phù hợp</h3>
-                                <p class="vs-howto-step__desc">Lọc theo môn thể thao, khu vực và khung giờ bạn muốn. Xem ảnh, giá và đánh giá thực tế từ cộng đồng.</p>
-                            </div>
-                        </div>
-                        <div class="vs-howto-step" data-step="2">
-                            <div class="vs-howto-step__num">2</div>
-                            <div class="vs-howto-step__text">
-                                <h3 class="vs-howto-step__title">Chọn giờ & thanh toán</h3>
-                                <p class="vs-howto-step__desc">Chọn khung giờ trống, điền thông tin và thanh toán trực tuyến hoặc tiền mặt tại sân. An toàn, bảo mật.</p>
-                            </div>
-                        </div>
-                        <div class="vs-howto-step" data-step="3">
-                            <div class="vs-howto-step__num">3</div>
-                            <div class="vs-howto-step__text">
-                                <h3 class="vs-howto-step__title">Nhận xác nhận tức thì</h3>
-                                <p class="vs-howto-step__desc">Xác nhận đặt sân qua email và thông báo. Lịch thi đấu hiển thị ngay trong tài khoản của bạn.</p>
-                            </div>
-                        </div>
-                        <div class="vs-howto-step" data-step="4">
-                            <div class="vs-howto-step__num">4</div>
-                            <div class="vs-howto-step__text">
-                                <h3 class="vs-howto-step__title">Check-in & thi đấu</h3>
-                                <p class="vs-howto-step__desc">Đến sân, xuất trình mã xác nhận và sẵn sàng thi đấu. Đơn giản như vậy thôi!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ COMMUNITY / GHEP KEO ═══ -->
-        <section class="vs-community-section vs-reveal" aria-label="Ghép kèo">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Ghép kèo <span>cùng cộng đồng</span></h2>
-                    <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-section-link">Xem tất cả trận</a>
-                </div>
-                <div class="vs-match-grid">
-                    <div class="vs-match-card">
-                        <div class="vs-match-card__sport"><i class="fas fa-futbol"></i> Bóng đá</div>
-                        <h3 class="vs-match-card__title">Tìm 2 người cho trận 5vs5 tối thứ 7</h3>
-                        <div class="vs-match-card__meta">
-                            <div class="vs-match-card__row"><i class="fas fa-calendar"></i> Thứ 7, 02/08/2026 · 19:00</div>
-                            <div class="vs-match-card__row"><i class="fas fa-location-dot"></i> Sân Thành Công, Vũng Tàu</div>
-                            <div class="vs-match-card__row"><i class="fas fa-signal"></i> Trình độ: Trung bình</div>
-                        </div>
-                        <div class="vs-match-card__slots">Còn 2 chỗ trống</div>
-                        <div class="vs-match-card__avatars">
-                            <div class="vs-match-card__avatar">T</div>
-                            <div class="vs-match-card__avatar">N</div>
-                            <div class="vs-match-card__avatar">H</div>
-                            <div class="vs-match-card__avatar" style="background:var(--vs-beige);color:var(--vs-dark);font-size:10px">+5</div>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-match-card__cta">Tham gia ngay</a>
-                    </div>
-                    <div class="vs-match-card">
-                        <div class="vs-match-card__sport"><i class="fas fa-table-tennis-paddle-ball"></i> Cầu lông</div>
-                        <h3 class="vs-match-card__title">Đôi nam ghép cặp đánh đôi cuối tuần</h3>
-                        <div class="vs-match-card__meta">
-                            <div class="vs-match-card__row"><i class="fas fa-calendar"></i> Chủ nhật, 03/08/2026 · 07:00</div>
-                            <div class="vs-match-card__row"><i class="fas fa-location-dot"></i> TT Cầu lông Vũng Tàu</div>
-                            <div class="vs-match-card__row"><i class="fas fa-signal"></i> Trình độ: Khá</div>
-                        </div>
-                        <div class="vs-match-card__slots">Còn 1 chỗ trống</div>
-                        <div class="vs-match-card__avatars">
-                            <div class="vs-match-card__avatar">A</div>
-                            <div class="vs-match-card__avatar">B</div>
-                            <div class="vs-match-card__avatar">C</div>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-match-card__cta">Tham gia ngay</a>
-                    </div>
-                    <div class="vs-match-card">
-                        <div class="vs-match-card__sport"><i class="fas fa-circle-dot"></i> Pickleball</div>
-                        <h3 class="vs-match-card__title">Tìm bạn đánh Pickleball buổi sáng</h3>
-                        <div class="vs-match-card__meta">
-                            <div class="vs-match-card__row"><i class="fas fa-calendar"></i> Thứ 2, 04/08/2026 · 06:30</div>
-                            <div class="vs-match-card__row"><i class="fas fa-location-dot"></i> Sân Pickleball Long Điền</div>
-                            <div class="vs-match-card__row"><i class="fas fa-signal"></i> Trình độ: Mọi trình độ</div>
-                        </div>
-                        <div class="vs-match-card__slots">Còn 3 chỗ trống</div>
-                        <div class="vs-match-card__avatars">
-                            <div class="vs-match-card__avatar">M</div>
-                            <div class="vs-match-card__avatar">L</div>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-match-card__cta">Tham gia ngay</a>
-                    </div>
-                    <div class="vs-match-card">
-                        <div class="vs-match-card__sport"><i class="fas fa-basketball"></i> Bóng rổ</div>
-                        <h3 class="vs-match-card__title">3vs3 pickup game chiều tối thứ 6</h3>
-                        <div class="vs-match-card__meta">
-                            <div class="vs-match-card__row"><i class="fas fa-calendar"></i> Thứ 6, 01/08/2026 · 18:00</div>
-                            <div class="vs-match-card__row"><i class="fas fa-location-dot"></i> Sân V-Arena, Vũng Tàu</div>
-                            <div class="vs-match-card__row"><i class="fas fa-signal"></i> Trình độ: Mọi trình độ</div>
-                        </div>
-                        <div class="vs-match-card__slots">Còn 2 chỗ trống</div>
-                        <div class="vs-match-card__avatars">
-                            <div class="vs-match-card__avatar">K</div>
-                            <div class="vs-match-card__avatar">P</div>
-                            <div class="vs-match-card__avatar">Q</div>
-                            <div class="vs-match-card__avatar">R</div>
-                        </div>
-                        <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-match-card__cta">Tham gia ngay</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ PARTNERS ═══ -->
-        <section class="vs-partners-section vs-reveal" aria-label="Đối tác">
-            <div class="vs-container">
-                <p class="vs-partners-label">Đối tác & cơ sở uy tín trên V-SPORT</p>
-                <div class="vs-partners-list">
-                    <span class="vs-partner-item">SportZone</span>
-                    <span class="vs-partner-item">ArenaVT</span>
-                    <span class="vs-partner-item">ProCourt</span>
-                    <span class="vs-partner-item">VungTau FC</span>
-                    <span class="vs-partner-item">SmashPro</span>
-                    <span class="vs-partner-item">FitArena</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ BLOG ═══ -->
-        <section class="vs-blog-section vs-reveal" aria-label="Tin tức & kinh nghiệm">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Tin tức & <span>kinh nghiệm thể thao</span></h2>
-                    <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-section-link">Xem thêm bài viết</a>
-                </div>
-                <div class="vs-carousel-wrap">
-                    <div class="vs-carousel" id="blogCarousel">
-                        <div class="vs-blog-card">
-                            <div class="vs-blog-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/gallery/gallery-01.jpg" alt="5 lưu ý chọn sân phù hợp" loading="lazy">
-                                <span class="vs-blog-card__cat">Kinh nghiệm</span>
-                            </div>
-                            <div class="vs-blog-card__body">
-                                <div class="vs-blog-card__date"><i class="far fa-calendar"></i> 10/06/2026</div>
-                                <h3 class="vs-blog-card__title"><a href="${pageContext.request.contextPath}/customer/tim-kiem">5 lưu ý giúp bạn chọn sân thể thao phù hợp nhất</a></h3>
-                                <p class="vs-blog-card__excerpt">Không phải sân nào cũng phù hợp với mọi trình độ và phong cách chơi. Cùng V-SPORT tìm hiểu cách chọn sân thông minh.</p>
-                                <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-blog-card__read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="vs-blog-card">
-                            <div class="vs-blog-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/categories/pickleball.jpg" alt="Chọn vợt Pickleball" loading="lazy">
-                                <span class="vs-blog-card__cat">Pickleball</span>
-                            </div>
-                            <div class="vs-blog-card__body">
-                                <div class="vs-blog-card__date"><i class="far fa-calendar"></i> 08/06/2026</div>
-                                <h3 class="vs-blog-card__title"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball">Hướng dẫn chọn vợt Pickleball cho người mới bắt đầu</a></h3>
-                                <p class="vs-blog-card__excerpt">Carbon hay fiberglass? Nặng hay nhẹ? Bài viết này giải đáp mọi thắc mắc để bạn chọn được cây vợt ưng ý đầu tiên.</p>
-                                <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Pickleball" class="vs-blog-card__read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="vs-blog-card">
-                            <div class="vs-blog-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/experience/experience-playing.jpg" alt="Khởi động" loading="lazy">
-                                <span class="vs-blog-card__cat">Sức khỏe</span>
-                            </div>
-                            <div class="vs-blog-card__body">
-                                <div class="vs-blog-card__date"><i class="far fa-calendar"></i> 05/06/2026</div>
-                                <h3 class="vs-blog-card__title"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Tầm quan trọng của khởi động đúng cách trước khi thi đấu</a></h3>
-                                <p class="vs-blog-card__excerpt">Khởi động kỹ không chỉ tăng hiệu suất mà còn giúp bạn tránh chấn thương không đáng có. Đừng bỏ qua bước này!</p>
-                                <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-blog-card__read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="vs-blog-card">
-                            <div class="vs-blog-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/community/community-03.jpg" alt="Tìm đồng đội" loading="lazy">
-                                <span class="vs-blog-card__cat">Cộng đồng</span>
-                            </div>
-                            <div class="vs-blog-card__body">
-                                <div class="vs-blog-card__date"><i class="far fa-calendar"></i> 02/06/2026</div>
-                                <h3 class="vs-blog-card__title"><a href="${pageContext.request.contextPath}/customer/ghep-keo">Làm thế nào để tìm được đồng đội hợp trình độ trên V-SPORT?</a></h3>
-                                <p class="vs-blog-card__excerpt">Tính năng ghép kèo trên V-SPORT hoạt động như thế nào? Hướng dẫn đầy đủ cho người mới sử dụng nền tảng.</p>
-                                <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-blog-card__read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="vs-blog-card">
-                            <div class="vs-blog-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/gallery/gallery-02.jpg" alt="Dinh dưỡng" loading="lazy">
-                                <span class="vs-blog-card__cat">Sức khỏe</span>
-                            </div>
-                            <div class="vs-blog-card__body">
-                                <div class="vs-blog-card__date"><i class="far fa-calendar"></i> 28/05/2026</div>
-                                <h3 class="vs-blog-card__title"><a href="${pageContext.request.contextPath}/customer/tim-kiem">Dinh dưỡng trước và sau khi tập thể thao — bí quyết phục hồi nhanh</a></h3>
-                                <p class="vs-blog-card__excerpt">Ăn gì trước khi ra sân? Bổ sung gì sau khi thi đấu? Cùng chuyên gia V-SPORT chia sẻ bí quyết.</p>
-                                <a href="${pageContext.request.contextPath}/customer/tim-kiem" class="vs-blog-card__read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="vs-blog-card">
-                            <div class="vs-blog-card__img">
-                                <img src="${pageContext.request.contextPath}/assets/images/vsport/courts/court-tennis.jpg" alt="Bí quyết Tennis" loading="lazy">
-                                <span class="vs-blog-card__cat">Tennis</span>
-                            </div>
-                            <div class="vs-blog-card__body">
-                                <div class="vs-blog-card__date"><i class="far fa-calendar"></i> 20/05/2026</div>
-                                <h3 class="vs-blog-card__title"><a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis">5 kỹ thuật đánh Tennis cơ bản cho người mới bắt đầu</a></h3>
-                                <p class="vs-blog-card__excerpt">Từ grip, stance cho đến swing cơ bản — hướng dẫn từng bước để bạn tự tin bước ra sân ngay hôm nay.</p>
-                                <a href="${pageContext.request.contextPath}/customer/tim-kiem?q=Tennis" class="vs-blog-card__read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-c-arrows">
-                        <button class="vs-c-arrow vs-c-arrow--l" aria-label="Trước"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-                        <button class="vs-c-arrow vs-c-arrow--r" aria-label="Tiếp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ TEAM ═══ -->
-        <section class="vs-team-section vs-reveal" aria-label="Đội ngũ V-SPORT">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Đội ngũ <span>xây dựng V-SPORT</span></h2>
-                </div>
-                <div class="vs-team-grid">
-                    <div class="vs-team-card">
-                        <div class="vs-team-card__img">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-01.jpg" alt="Nguyễn Văn An" loading="lazy">
-                        </div>
-                        <div class="vs-team-card__body">
-                            <h3 class="vs-team-card__name">Nguyễn Văn An</h3>
-                            <div class="vs-team-card__role">Backend Developer</div>
-                            <p class="vs-team-card__contribution">Thiết kế và xây dựng API đặt sân, hệ thống thanh toán và quản lý người dùng.</p>
-                            <div class="vs-team-card__skills">
-                                <span class="vs-team-card__skill">Java</span>
-                                <span class="vs-team-card__skill">Jakarta EE</span>
-                                <span class="vs-team-card__skill">MySQL</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-team-card">
-                        <div class="vs-team-card__img">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-02.jpg" alt="Trần Thị Bảo" loading="lazy">
-                        </div>
-                        <div class="vs-team-card__body">
-                            <h3 class="vs-team-card__name">Trần Thị Bảo</h3>
-                            <div class="vs-team-card__role">Frontend Developer</div>
-                            <p class="vs-team-card__contribution">Thiết kế giao diện người dùng, tối ưu trải nghiệm đặt sân và ghép kèo trên mọi thiết bị.</p>
-                            <div class="vs-team-card__skills">
-                                <span class="vs-team-card__skill">JSP</span>
-                                <span class="vs-team-card__skill">CSS</span>
-                                <span class="vs-team-card__skill">JavaScript</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-team-card">
-                        <div class="vs-team-card__img">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/players/person-03.jpg" alt="Lê Hoàng Cường" loading="lazy">
-                        </div>
-                        <div class="vs-team-card__body">
-                            <h3 class="vs-team-card__name">Lê Hoàng Cường</h3>
-                            <div class="vs-team-card__role">Full-Stack Developer</div>
-                            <p class="vs-team-card__contribution">Tích hợp tính năng ghép kèo, hệ thống thông báo real-time và bản đồ sân gần bạn.</p>
-                            <div class="vs-team-card__skills">
-                                <span class="vs-team-card__skill">Java</span>
-                                <span class="vs-team-card__skill">JSP/JSTL</span>
-                                <span class="vs-team-card__skill">Ajax</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="vs-team-card">
-                        <div class="vs-team-card__img">
-                            <img src="${pageContext.request.contextPath}/assets/images/vsport/community/team-01.jpg" alt="Phạm Thị Dung" loading="lazy">
-                        </div>
-                        <div class="vs-team-card__body">
-                            <h3 class="vs-team-card__name">Phạm Thị Dung</h3>
-                            <div class="vs-team-card__role">UX & Product</div>
-                            <p class="vs-team-card__contribution">Nghiên cứu người dùng, xây dựng luồng đặt sân và tối ưu chuyển đổi trên toàn nền tảng.</p>
-                            <div class="vs-team-card__skills">
-                                <span class="vs-team-card__skill">UX Research</span>
-                                <span class="vs-team-card__skill">Figma</span>
-                                <span class="vs-team-card__skill">Testing</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ GALLERY ═══ -->
-        <section class="vs-gallery-section vs-reveal" aria-label="Thư viện ảnh">
-            <div class="vs-container">
-                <div class="vs-section-head">
-                    <h2 class="vs-section-title">Cộng đồng <span>V-SPORT</span></h2>
-                    <a href="${pageContext.request.contextPath}/customer/ghep-keo" class="vs-section-link">Khám phá cộng đồng</a>
-                </div>
-                <div class="vs-gallery-grid">
-                    <div class="vs-gallery-item">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/community/community-01.jpg" alt="Cộng đồng 1" loading="lazy">
-                        <div class="vs-gallery-item__overlay"><i class="fas fa-expand vs-gallery-item__icon"></i></div>
-                    </div>
-                    <div class="vs-gallery-item">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/gallery/gallery-01.jpg" alt="Gallery 1" loading="lazy">
-                        <div class="vs-gallery-item__overlay"><i class="fas fa-expand vs-gallery-item__icon"></i></div>
-                    </div>
-                    <div class="vs-gallery-item">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/gallery/gallery-02.jpg" alt="Gallery 2" loading="lazy">
-                        <div class="vs-gallery-item__overlay"><i class="fas fa-expand vs-gallery-item__icon"></i></div>
-                    </div>
-                    <div class="vs-gallery-item">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/community/community-02.jpg" alt="Cộng đồng 2" loading="lazy">
-                        <div class="vs-gallery-item__overlay"><i class="fas fa-expand vs-gallery-item__icon"></i></div>
-                    </div>
-                    <div class="vs-gallery-item">
-                        <img src="${pageContext.request.contextPath}/assets/images/vsport/gallery/gallery-03.jpg" alt="Gallery 3" loading="lazy">
-                        <div class="vs-gallery-item__overlay"><i class="fas fa-expand vs-gallery-item__icon"></i></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ NEWSLETTER ═══ -->
-        <section class="vs-newsletter-section vs-reveal" aria-label="Đăng ký nhận tin">
-            <div class="vs-container">
-                <div class="vs-newsletter-box">
-                    <div class="vs-newsletter-copy">
-                        <h2>Nhận ưu đãi từ V-SPORT</h2>
-                        <p>Cập nhật sân mới, khuyến mãi độc quyền và lịch thi đấu cộng đồng hằng tuần.</p>
-                    </div>
-                    <form class="vs-nl-form" id="newsletterForm" novalidate>
-                        <input type="email" placeholder="Nhập địa chỉ email của bạn" required aria-label="Email đăng ký nhận tin">
-                        <button type="submit">Đăng ký ngay</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        </div><!-- /.vs-commerce-home -->
-        </div><!-- /#homeView -->
-
-        <!-- Auth View – PRESERVED UNCHANGED -->
-        <div id="authView" class="page-view <%= isAuthTab ? "active" : "" %>">
-            <!-- Auth Header -->
-            <div class="auth-header">
-                <div class="container">
-                    <div class="auth-header-inner">
-                        <h1 class="auth-title">Tài khoản của tôi</h1>
-                        <div class="breadcrumb">
-                            <a href="#home" id="breadcrumbHome"><i class="fas fa-home"></i> Trang chủ</a>
-                            <span><i class="fas fa-chevron-right" style="font-size: 10px; margin: 0 5px;"></i></span>
-                            <span>Tài khoản</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Auth Container -->
+        <!-- ================================================================
+             4. MINT HORIZONTAL BANNER + INTEGRATED TRUST METRICS
+             ================================================================ -->
+        <section class="petpy-banner-section">
             <div class="container">
-                <div class="auth-tabs">
-                    <button class="auth-tab-btn active" data-target="loginCol">Đăng nhập</button>
-                    <button class="auth-tab-btn" data-target="registerCol">Đăng ký</button>
-                </div>
+                <div class="petpy-yellow-banner reveal-up">
+                    <img src="${pageContext.request.contextPath}/assets/images/service-bath.jpg" alt="Bé cưng thư giãn" class="pyb-floating-pet" />
 
-                <div class="auth-container">
-                    <!-- Login Column -->
-                    <div class="auth-col active" id="loginCol">
-                        <h3>Đăng nhập</h3>
-                        <form id="loginForm" novalidate>
-                            <div class="form-group">
-                                <label for="loginEmail">Email hoặc số điện thoại <span>*</span></label>
-                                <input type="text" id="loginEmail" class="form-control" placeholder="Nhập email hoặc số điện thoại..." required aria-describedby="loginEmailError">
-                                <div id="loginEmailError" class="error-message"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập email hoặc số điện thoại</div>
+                    <div class="pyb-grid">
+                        <div class="pyb-item">
+                            <div class="pyb-head">
+                                <span class="pyb-icon" aria-hidden="true">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                                    </svg>
+                                </span>
+                                <h3>Tắm Spa Thảo Mộc</h3>
                             </div>
+                            <p>
+                                Sữa tắm hữu cơ dịu nhẹ, ngâm bồn sục micro-bubble và sấy phồng êm ái giúp bé thư giãn tuyệt đối.
+                            </p>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="loginPassword">Mật khẩu <span>*</span></label>
-                                <div class="password-input-wrap">
-                                    <input type="password" id="loginPassword" class="form-control" placeholder="Nhập mật khẩu..." required aria-describedby="loginPasswordError">
-                                    <button type="button" class="password-toggle" aria-label="Hiện/ẩn mật khẩu">
-                                        <i class="far fa-eye-slash"></i>
-                                    </button>
-                                </div>
-                                <div id="loginPasswordError" class="error-message"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập mật khẩu</div>
+                        <div class="pyb-item">
+                            <div class="pyb-head">
+                                <span class="pyb-icon" aria-hidden="true">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                </span>
+                                <h3>Phòng Kính 360&deg; &amp; Lưu Trú</h3>
                             </div>
+                            <p>
+                                Không gian vách kính trong suốt khử khuẩn UV kết hợp phòng nghỉ VIP điều hòa có camera 24/7.
+                            </p>
+                        </div>
 
-                            <div class="form-check">
-                                <input type="checkbox" id="rememberMe">
-                                <label for="rememberMe">Ghi nhớ đăng nhập</label>
-                            </div>
-
-                            <div class="auth-actions">
-                                <button type="submit" class="btn btn-primary btn-auth" id="loginSubmitBtn">
-                                    <i class="fas fa-spinner"></i>
-                                    <span class="btn-text">Đăng nhập</span>
-                                </button>
-                                <a href="#" class="forgot-link" id="forgotBtn">Quên mật khẩu?</a>
-                            </div>
-                        </form>
+                        <div class="pyb-quote">
+                            <p>
+                                Thú cưng không chỉ là vật nuôi, mà là thành viên bé nhỏ đáng yêu nhất trong gia đình bạn.
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- Register Column -->
-                    <div class="auth-col" id="registerCol">
-                        <h3>Đăng ký</h3>
-                        <form id="registerForm" novalidate>
-                            <div style="display: flex; gap: 20px;">
-                                <div class="form-group" style="flex: 1;">
-                                    <label for="regName">Họ và tên <span>*</span></label>
-                                    <input type="text" id="regName" class="form-control" placeholder="Nhập họ và tên..." required aria-describedby="regNameError">
-                                    <div id="regNameError" class="error-message"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập họ và tên</div>
-                                </div>
-                                <div class="form-group" style="flex: 1;">
-                                    <label for="regPhone">Số điện thoại <span>*</span></label>
-                                    <input type="tel" id="regPhone" class="form-control" placeholder="Nhập số điện thoại..." required aria-describedby="regPhoneError">
-                                    <div id="regPhoneError" class="error-message"><i class="fas fa-exclamation-circle"></i> Số điện thoại không hợp lệ</div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="regEmail">Email <span>*</span></label>
-                                <input type="email" id="regEmail" class="form-control" placeholder="Nhập email..." required aria-describedby="regEmailError">
-                                <div id="regEmailError" class="error-message"><i class="fas fa-exclamation-circle"></i> Email không hợp lệ</div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="regPassword">Mật khẩu <span>*</span></label>
-                                <div class="password-input-wrap">
-                                    <input type="password" id="regPassword" class="form-control" placeholder="Nhập mật khẩu..." required autocomplete="new-password" aria-describedby="regPasswordError" oninput="onRegPasswordInput()">
-                                    <button type="button" class="password-toggle" aria-label="Hiện/ẩn mật khẩu">
-                                        <i class="far fa-eye-slash"></i>
-                                    </button>
-                                </div>
-                                <div class="password-helper">Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt (vd: <strong>Password1!</strong>).</div>
-                                <div id="regPasswordError" class="error-message"><i class="fas fa-exclamation-circle"></i> Mật khẩu cần có chữ hoa, chữ thường, số và ký tự đặc biệt</div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="regConfirmPassword">Xác nhận mật khẩu <span>*</span></label>
-                                <div class="password-input-wrap">
-                                    <input type="password" id="regConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu..." required autocomplete="new-password" aria-describedby="regConfirmPasswordError" oninput="onRegConfirmInput()">
-                                    <button type="button" class="password-toggle" aria-label="Hiện/ẩn mật khẩu">
-                                        <i class="far fa-eye-slash"></i>
-                                    </button>
-                                </div>
-                                <div id="regConfirmPasswordError" class="error-message"><i class="fas fa-exclamation-circle"></i> Mật khẩu xác nhận không khớp</div>
-                                <div id="regConfirmOk" style="display:none;align-items:center;gap:5px;color:#16a34a;font-size:11.5px;font-weight:600;margin-top:5px;">
-                                    <i class="fas fa-check-circle"></i> Mật khẩu khớp
-                                </div>
-                            </div>
-
-                            <div class="form-check">
-                                <input type="checkbox" id="agreeTerms" required>
-                                <label for="agreeTerms">Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật</label>
-                                <div id="agreeTermsError" class="error-message"><i class="fas fa-exclamation-circle"></i> Vui lòng đồng ý với điều khoản</div>
-                            </div>
-
-                            <div class="auth-actions">
-                                <button type="submit" class="btn btn-primary btn-auth" id="registerSubmitBtn" style="width: 100%;">
-                                    <i class="fas fa-spinner"></i>
-                                    <span class="btn-text">Tạo tài khoản</span>
-                                </button>
-                            </div>
-                        </form>
+                    <div class="pyb-stats-bar">
+                        <div class="pyb-stat-pill">
+                            <strong>5.000+</strong>
+                            <span>Bé cưng đã chăm sóc</span>
+                        </div>
+                        <div class="pyb-stat-pill">
+                            <strong>20+</strong>
+                            <span>Chuyên viên Grooming</span>
+                        </div>
+                        <div class="pyb-stat-pill">
+                            <strong>10+</strong>
+                            <span>Cơ sở tiêu chuẩn</span>
+                        </div>
+                        <div class="pyb-stat-pill">
+                            <strong>4.9/5 &#9733;</strong>
+                            <span>98% Khách hàng hài lòng</span>
+                        </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Forgot Password Modal -->
-            <div class="modal-overlay" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-                <div class="modal-content">
-                    <button class="modal-close" aria-label="Đóng" id="closeModalBtn"><i class="fas fa-times"></i></button>
-                    <h3 id="modalTitle">Khôi phục mật khẩu</h3>
-                    <p>Nhập email của bạn, chúng tôi sẽ tạo một mật khẩu mới và gửi ngay đến email này.</p>
+        <!-- ================================================================
+             5. SERVICE WE PROVIDE SHOWCASE + DETAILED PRICING CATALOG
+             ================================================================ -->
+        <section id="bang-gia-section" class="petpy-services-section petpy-section-rel">
+            <svg class="petpy-paw-bg" style="top:18px;left:22%;width:42px;height:42px;transform:rotate(-22deg);" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+            </svg>
 
-                    <form id="forgotForm" novalidate>
-                        <div class="form-group">
-                            <label for="forgotEmail">Email <span>*</span></label>
-                            <input type="email" id="forgotEmail" name="email" class="form-control" placeholder="Nhập email..." required aria-describedby="forgotEmailError">
-                            <div id="forgotEmailError" class="error-message"><i class="fas fa-exclamation-circle"></i> Email không hợp lệ</div>
-                        </div>
-
-                        <div class="auth-actions">
-                            <button type="submit" class="btn btn-primary btn-auth" id="forgotSubmitBtn" style="width: 100%;">
-                                <i class="fas fa-spinner"></i>
-                                <span class="btn-text">Gửi mật khẩu mới</span>
+            <div class="container">
+                <div class="petpy-services-showcase reveal-up">
+                    <div class="pss-list-col">
+                        <span class="section-eyebrow">LIỆU TRÌNH ĐƯỢC YÊU THÍCH</span>
+                        <h2 class="pss-title">Dịch Vụ<br/>Chúng Tôi Cung Cấp</h2>
+                        <div class="pss-list">
+                            <button type="button" class="pss-row-item" data-open-booking="Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện">
+                                <span>Tắm Sấy Thảo Mộc Organic</span>
+                                <span class="pss-row-right"><em>150.000 đ</em> &rarr;</span>
+                            </button>
+                            <button type="button" class="pss-row-item" data-open-booking="Cắt Tỉa Tạo Kiểu Chuẩn Salon">
+                                <span>Cắt Tỉa Tạo Kiểu Chuẩn Salon</span>
+                                <span class="pss-row-right"><em>280.000 đ</em> &rarr;</span>
+                            </button>
+                            <button type="button" class="pss-row-item" data-open-booking="Spa Thảo Dược &amp; Phục Hồi Da Lông">
+                                <span>Spa Thảo Dược &amp; Phục Hồi Da</span>
+                                <span class="pss-row-right"><em>350.000 đ</em> &rarr;</span>
+                            </button>
+                            <button type="button" class="pss-row-item" data-open-booking="Vệ Sinh Tai, Móng &amp; Tuyến Hôi Chuyên Sâu">
+                                <span>Vệ Sinh Tai, Móng &amp; Tuyến Hôi</span>
+                                <span class="pss-row-right"><em>120.000 đ</em> &rarr;</span>
+                            </button>
+                            <button type="button" class="pss-row-item" data-open-booking="Combo Chăm Sóc Toàn Diện &amp; Lưu Trú VIP">
+                                <span>Combo Chăm Sóc &amp; Lưu Trú VIP</span>
+                                <span class="pss-row-right"><em>390.000 đ</em> &rarr;</span>
                             </button>
                         </div>
-                    </form>
+                    </div>
+
+                    <div class="pss-center-pink-card">
+                        <img src="${pageContext.request.contextPath}/assets/images/service-grooming.jpg" alt="Chuyên viên chăm sóc và cắt tỉa thú cưng tại Pet care" />
+                    </div>
+
+                    <div class="pss-right-col">
+                        <div class="pss-right-copy">
+                            <p>
+                                Mọi nhu cầu chăm sóc thú cưng trong một nơi duy nhất: từ tắm thư giãn, tạo kiểu theo giống
+                                đến phục hồi da lông chuyên sâu &mdash; không phụ phí ẩn tại TP.HCM &amp; Hà Nội.
+                            </p>
+                            <a href="#bang-gia-chi-tiet" class="petpy-btn-outline-blue">
+                                Xem bảng giá chi tiết
+                            </a>
+                        </div>
+
+                        <div class="pss-mini-video-card">
+                            <div class="pss-mvc-left">
+                                <h4>Tham Quan Cơ Sở</h4>
+                                <span>Phòng kính 360&deg; &amp; Bồn Ozone</span>
+                                <a href="${pageContext.request.contextPath}/branches.jsp" class="pss-play-btn" aria-label="Tham quan hệ thống cơ sở Pet care">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                                    </svg>
+                                </a>
+                            </div>
+                            <img src="${pageContext.request.contextPath}/assets/images/branch-hn.jpg" alt="Không gian Pet care Spa" class="pss-mvc-thumb" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Filterable Pricing Catalog (Compatible with home.js) -->
+                <div id="bang-gia-chi-tiet" class="petpy-catalog-wrap">
+                    <div class="section-split-head reveal-up">
+                        <div>
+                            <span class="section-eyebrow">BẢNG GIÁ &amp; LIỆU TRÌNH MINH BẠCH</span>
+                            <h2 class="section-main-title">Chọn Gói Dịch Vụ Phù Hợp Cho Bé</h2>
+                            <p class="section-subtitle">
+                                Niêm yết rõ ràng theo cân nặng. Nhấn vào từng thẻ để xem chi tiết từng bước thực hiện.
+                            </p>
+                        </div>
+
+                        <div class="filter-tabs-bar" role="tablist">
+                            <button type="button" class="filter-tab-btn active" data-filter="all">Tất cả dịch vụ</button>
+                            <button type="button" class="filter-tab-btn" data-filter="tam-spa">Tắm &amp; Spa</button>
+                            <button type="button" class="filter-tab-btn" data-filter="grooming">Grooming &amp; Cắt Tỉa</button>
+                            <button type="button" class="filter-tab-btn" data-filter="khach-san">Combo &amp; Lưu Trú</button>
+                        </div>
+                    </div>
+
+                    <div class="services-cards-grid">
+                        <c:forEach var="srv" items="${services}">
+                            <article class="service-price-card reveal-up" data-category="${srv.category}">
+                                <div class="spc-media-wrap">
+                                    <c:choose>
+                                        <c:when test="${srv.id == 'grooming-cat-tia'}">
+                                            <img src="${pageContext.request.contextPath}/assets/images/service-grooming.jpg" alt="${srv.title}" class="spc-media-img" />
+                                        </c:when>
+                                        <c:when test="${srv.id == 'spa-cham-soc-da'}">
+                                            <img src="${pageContext.request.contextPath}/assets/images/service-flea.jpg" alt="${srv.title}" class="spc-media-img" />
+                                        </c:when>
+                                        <c:when test="${srv.id == 've-sinh-tai-mong'}">
+                                            <img src="${pageContext.request.contextPath}/assets/images/service-shaving.jpg" alt="${srv.title}" class="spc-media-img" />
+                                        </c:when>
+                                        <c:when test="${srv.id == 'cham-soc-suc-khoe'}">
+                                            <img src="${pageContext.request.contextPath}/assets/images/service-petshop.jpg" alt="${srv.title}" class="spc-media-img" />
+                                        </c:when>
+                                        <c:when test="${srv.id == 'combo-cham-soc'}">
+                                            <img src="${pageContext.request.contextPath}/assets/images/service-boarding.jpg" alt="${srv.title}" class="spc-media-img" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}/assets/images/service-bath.jpg" alt="${srv.title}" class="spc-media-img" />
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="spc-media-overlay">
+                                        <span class="spc-duration-pill">${srv.badgeText}</span>
+                                        <span class="spc-floating-price">${srv.priceValue}${srv.priceSuffix}</span>
+                                    </div>
+                                </div>
+
+                                <div class="spc-top-row">
+                                    <span class="spc-badge ${srv.badgeTheme}">${srv.badgeText}</span>
+                                    <span class="spc-rating">${srv.ratingText}</span>
+                                </div>
+
+                                <h3>${srv.title}</h3>
+                                <p>${srv.description}</p>
+
+                                <div class="spc-tags">
+                                    <c:forEach var="t" items="${srv.tags}">
+                                        <span class="spc-tag">${t}</span>
+                                    </c:forEach>
+                                </div>
+
+                                <div class="spc-footer">
+                                    <div>
+                                        <span class="spc-price-label">${srv.priceLabel}</span>
+                                        <span class="spc-price-val">${srv.priceValue}</span>
+                                        <c:if test="${not empty srv.priceSuffix}">
+                                            <span class="spc-price-suffix">${srv.priceSuffix}</span>
+                                        </c:if>
+                                    </div>
+                                    <button type="button" class="btn-spc-book" data-open-booking="${srv.title}">
+                                        <span>Đặt lịch</span>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            <polyline points="12 5 19 12 12 19"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </article>
+                        </c:forEach>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Toast -->
-            <div class="success-toast" id="successToast">
-                <i class="fas fa-check-circle" id="toastIcon" style="margin-right: 8px;"></i> <span id="toastMessage">Thành công!</span>
+        <!-- ================================================================
+             6. VETTED SPECIALISTS SECTION (Petpy Layout + Green Theme)
+             ================================================================ -->
+        <section class="petpy-vetted-section">
+            <div class="container petpy-vetted-grid">
+                <div class="pvs-media-wrap reveal-up">
+                    <div class="pvs-yellow-photo">
+                        <img src="${pageContext.request.contextPath}/assets/images/hero-petcare.jpg" alt="Bé Poodle xinh xắn sau buổi Spa tại Pet care" />
+                    </div>
+                    <div class="pvs-floating-product">
+                        <img src="${pageContext.request.contextPath}/assets/images/service-petshop.jpg" alt="Mỹ phẩm thảo mộc Organic" />
+                        <strong>100% Thảo Mộc Organic</strong>
+                    </div>
+                </div>
+
+                <div class="pvs-copy reveal-up">
+                    <span class="section-eyebrow">TIÊU CHUẨN CHUYÊN MÔN PET CARE</span>
+                    <h2>Chuyên Viên Grooming Tuyển Chọn Khắt Khe</h2>
+                    <p>
+                        Mỗi bé cưng đều có cá tính riêng. Chúng tôi tuyển chọn và đào tạo đội ngũ kỹ thuật viên không chỉ vững tay nghề mà còn thực sự kiên nhẫn và yêu thương động vật.
+                    </p>
+
+                    <div class="pvs-checklist">
+                        <div class="pvs-check-item">
+                            <span class="pvs-check-icon" aria-hidden="true">&#10003;</span>
+                            <span>100% chuyên viên sở hữu chứng chỉ Grooming chuyên nghiệp &amp; kiểm tra tay nghề định kỳ.</span>
+                        </div>
+                        <div class="pvs-check-item">
+                            <span class="pvs-check-icon" aria-hidden="true">&#10003;</span>
+                            <span>Quy trình tắm sấy êm ái, tuyệt đối không dùng lồng sấy nóng gây căng thẳng cho bé.</span>
+                        </div>
+                        <div class="pvs-check-item">
+                            <span class="pvs-check-icon" aria-hidden="true">&#10003;</span>
+                            <span>Toàn bộ kéo, lược, tông-đơ và khăn tắm đều được tiệt trùng tia UV chuẩn quốc tế.</span>
+                        </div>
+                        <div class="pvs-check-item">
+                            <span class="pvs-check-icon" aria-hidden="true">&#10003;</span>
+                            <span>Bảo hành form dáng cắt tỉa trong 48 giờ tại toàn bộ hệ thống chi nhánh.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- ================================================================
+             7. FLEXIBLE SCHEDULING + 4-STEP PROCESS SUMMARY
+             ================================================================ -->
+        <section id="quy-trinh-section" class="petpy-schedule-section petpy-section-rel">
+            <svg class="petpy-paw-bg" style="top:38px;left:6%;width:38px;height:38px;transform:rotate(-20deg);" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+            </svg>
+
+            <div class="container">
+                <div class="petpy-center-title reveal-up">
+                    <span class="section-eyebrow">QUY TRÌNH &amp; ĐẶT LỊCH NHANH CHÓNG</span>
+                    <h2>Lịch Hẹn Luôn Sẵn Sàng &bull; Quy Trình 4 Bước</h2>
+                </div>
+
+                <div class="petpy-schedule-3grid">
+                    <article class="ps3-card reveal-up">
+                        <div class="ps3-icon green-soft" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                        <h3>Đặt Lịch Phút Chót</h3>
+                        <p>
+                            Đưa bé đi Spa gấp trong ngày? Hệ thống tự động giữ chỗ chuyên viên ngay trong 15 phút mà không phải chờ lâu.
+                        </p>
+                    </article>
+
+                    <article class="ps3-card reveal-up">
+                        <div class="ps3-icon mint-soft" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <h3>Đổi Giờ Hẹn Linh Hoạt</h3>
+                        <p>
+                            Lịch trình bận rộn thay đổi đột xuất? Bạn dễ dàng chọn lại khung giờ hoặc cơ sở khác chỉ trong 1 chạm.
+                        </p>
+                    </article>
+
+                    <article class="ps3-card reveal-up">
+                        <div class="ps3-icon emerald-soft" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <h3>Huỷ Hẹn Không Phí</h3>
+                        <p>
+                            Đặt lịch không cần trả trước và miễn phí hoàn toàn khi dời hoặc hủy ca hẹn trước giờ thực hiện 2 tiếng.
+                        </p>
+                    </article>
+                </div>
+
+                <!-- Slim 4-Step Care Journey Bar -->
+                <div class="petpy-4step-bar reveal-up">
+                    <div class="p4b-step">
+                        <span class="p4b-num">01</span>
+                        <div>
+                            <strong>Đặt lịch 30s</strong>
+                            <span>Giữ slot chuyên viên thực tế</span>
+                        </div>
+                    </div>
+                    <div class="p4b-step">
+                        <span class="p4b-num">02</span>
+                        <div>
+                            <strong>Tiếp nhận &amp; Kiểm tra</strong>
+                            <span>Tầm soát da, tai, móng miễn phí</span>
+                        </div>
+                    </div>
+                    <div class="p4b-step">
+                        <span class="p4b-num">03</span>
+                        <div>
+                            <strong>Grooming &amp; Spa</strong>
+                            <span>Phòng kính quan sát 360&deg;</span>
+                        </div>
+                    </div>
+                    <div class="p4b-step">
+                        <span class="p4b-num">04</span>
+                        <div>
+                            <strong>Bàn giao &amp; Bảo hành</strong>
+                            <span>Bảo hành form tỉa 48 giờ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================
+             8. TRUSTWORTHY CARE & SAME TRUSTED SITTER + REVIEWS
+             ================================================================ -->
+        <section id="quyen-loi-section" class="petpy-trust-section petpy-section-rel">
+            <svg class="petpy-paw-bg" style="bottom:48px;right:6%;width:40px;height:40px;transform:rotate(14deg);" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="7" cy="7.5" r="2"/><circle cx="12" cy="5.5" r="2"/><circle cx="17" cy="7.5" r="2"/><circle cx="4.5" cy="12" r="1.8"/><circle cx="19.5" cy="12" r="1.8"/>
+                <path d="M12 11.5c-3.2 0-6 2.3-6 5.2 0 1.9 1.6 3.3 3.6 3.3 1 0 1.7-.3 2.4-.3s1.4.3 2.4.3c2 0 3.6-1.4 3.6-3.3 0-2.9-2.8-5.2-6-5.2z"/>
+            </svg>
+
+            <div class="container">
+                <div class="petpy-center-title reveal-up">
+                    <span class="section-eyebrow">KHÔNG GIAN SALON FLAGSHIP</span>
+                    <h2>Chăm Sóc Tận Tâm, Tin Cậy<br/>&amp; An Toàn Cho Bé</h2>
+                </div>
+
+                <div class="petpy-trust-row reveal-up">
+                    <div class="ptr-green-card">
+                        <img src="${pageContext.request.contextPath}/assets/images/service-bath.jpg" alt="Tắm thư giãn an toàn cho thú cưng" />
+                    </div>
+
+                    <div class="ptr-copy">
+                        <h3>Quy trình tiếp nhận &amp; chăm sóc minh bạch từng bước</h3>
+                        <p>
+                            Mọi công đoạn từ kiểm tra tình trạng da lông, ngâm bồn sục Ozone đến cắt tỉa tạo kiểu đều diễn ra sau vách kính 360&deg; trong suốt để bạn luôn an tâm.
+                        </p>
+                        <button type="button" class="btn-hero-primary" data-open-booking="Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện">
+                            <span>Đặt lịch ngay</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="ptr-pink-box-wrap">
+                        <div class="ptr-pink-card">
+                            <img src="${pageContext.request.contextPath}/assets/images/branch-hcm.jpg" alt="Cơ sở Spa Pet care TP.HCM" />
+                        </div>
+                        <a href="${pageContext.request.contextPath}/branches.jsp" class="ptr-caption">
+                            KHÁM PHÁ CƠ SỞ TP.HCM &amp; HÀ NỘI &rarr;
+                        </a>
+                    </div>
+                </div>
+
+                <div class="petpy-center-title reveal-up">
+                    <span class="section-eyebrow">QUYỀN LỢI THÀNH VIÊN &amp; CẢM NHẬN</span>
+                    <h2>Đồng Hành Cùng Chuyên Viên<br/>Quen Thuộc Mỗi Lần Ghé Spa</h2>
+                </div>
+
+                <div class="petpy-sitter-row reveal-up">
+                    <div class="psr-copy">
+                        <h3>Lưu trữ sổ tay làm đẹp &amp; thói quen riêng của bé</h3>
+                        <p>
+                            Tài khoản thành viên ghi nhớ kiểu cắt yêu thích, loại sữa tắm dịu nhẹ hợp da và album ảnh sau mỗi buổi làm đẹp tại Pet care.
+                        </p>
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.loggedInUser}">
+                                <a href="${pageContext.request.contextPath}/profile" class="petpy-btn-outline-blue">
+                                    Quản lý hồ sơ thành viên &rarr;
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/register" class="petpy-btn-outline-blue">
+                                    Tạo hồ sơ miễn phí &rarr;
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="psr-center-pink">
+                        <img src="${pageContext.request.contextPath}/assets/images/service-boarding.jpg" alt="Chăm sóc lưu trú VIP tại Pet care" />
+                    </div>
+
+                    <div class="psr-right-reviews">
+                        <div class="psr-avatars-stack">
+                            <img src="${pageContext.request.contextPath}/assets/images/review-cat-miu.jpg" alt="Bé Miu" />
+                            <img src="${pageContext.request.contextPath}/assets/images/review-dog-bo.jpg" alt="Bé Bơ" />
+                            <img src="${pageContext.request.contextPath}/assets/images/review-dog-may.jpg" alt="Bé Mây" />
+                        </div>
+                        <span class="psr-right-label">Cảm nhận từ khách hàng &amp; bé cưng</span>
+
+                        <c:forEach var="rev" items="${reviews}" end="1">
+                            <article class="psr-quote-card">
+                                <p>${rev.quote}</p>
+                                <strong>${rev.authorName}</strong>
+                                <span>${rev.branchName} &bull; ${rev.timeAgo}</span>
+                            </article>
+                        </c:forEach>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================
+             9. BOOKING CTA SECTION ("Đặt lịch chăm sóc cho bé ngay hôm nay")
+             ================================================================ -->
+        <section class="booking-cta-section">
+            <div class="container">
+                <div class="booking-cta-card reveal-up">
+                    <div class="booking-cta-content">
+                        <span class="cta-badge">ĐẶT LỊCH TRỰC TUYẾN NHANH CHÓNG</span>
+                        <h2>Đặt lịch chăm sóc cho bé ngay hôm nay</h2>
+                        <p>
+                            Chọn dịch vụ, cơ sở và thời gian phù hợp chỉ trong vài bước. Đội ngũ chuyên viên Pet care luôn sẵn sàng đón tiếp bé cưng của bạn.
+                        </p>
+                        <div class="booking-cta-btns">
+                            <button type="button" class="btn-cta-mint" data-open-booking="Grooming & Tắm Sấy Thảo Mộc Toàn Diện">
+                                <span>Đặt lịch ngay</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </button>
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.loggedInUser}">
+                                    <a href="${pageContext.request.contextPath}/services.jsp" class="btn-cta-outline-white">
+                                        Xem bảng giá chi tiết
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/register" class="btn-cta-outline-white">
+                                        Đăng ký tài khoản mới
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+
+                    <div class="booking-cta-white-box">
+                        <h3>Đặc quyền khi đặt lịch trước</h3>
+                        <p>Áp dụng tại toàn bộ hệ thống Pet care Spa</p>
+                        <div class="cta-quick-highlights">
+                            <div class="cta-quick-item">
+                                <span class="check">&#10003;</span>
+                                <span>Giữ chỗ chuyên viên 15 phút, không phải chờ đợi</span>
+                            </div>
+                            <div class="cta-quick-item">
+                                <span class="check">&#10003;</span>
+                                <span>Tặng gói kiểm tra da lông &amp; xịt dưỡng tinh dầu</span>
+                            </div>
+                            <div class="cta-quick-item">
+                                <span class="check">&#10003;</span>
+                                <span>Miễn phí đổi hoặc hủy lịch hẹn trước 2 giờ</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-cta-box-full" data-open-booking="Combo Chăm Sóc Toàn Diện & Lưu Trú VIP">
+                            <span>Chọn khung giờ trống ngay &rarr;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- OTP Verification Modal – PRESERVED UNCHANGED -->
-    <div id="otpModal" style="display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);" role="dialog" aria-modal="true">
-        <div style="background:#fff;border-radius:20px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.2);overflow:hidden;animation:otpCardIn .28s cubic-bezier(.34,1.3,.64,1);">
-            <div style="background:#0f172a;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;">
-                <div style="display:flex;align-items:center;gap:9px;">
-                    <div style="width:28px;height:28px;background:#01e281;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#042d1a;">
-                        <i class="fas fa-shield-halved"></i>
+    <!-- ====================================================================
+         10. SITE FOOTER
+         ==================================================================== -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand-row">
+                        <span class="footer-brand-icon">
+                            <img src="${pageContext.request.contextPath}/assets/images/logo.png?v=4" alt="PetCare Logo" />
+                        </span>
                     </div>
-                    <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:.5px;font-family:'Outfit',sans-serif;">Xác minh tài khoản</span>
+                    <p class="footer-desc">
+                        Hệ thống Salon &amp; Spa Chăm Sóc Thú Cưng Tiêu Chuẩn Cao Cấp. Mang đến trải nghiệm làm đẹp thư giãn, an toàn với mỹ phẩm thảo mộc organic 100%.
+                    </p>
+                    <div class="footer-socials" aria-label="Mạng xã hội">
+                        <a href="#trang-chu" class="footer-social-link" aria-label="Facebook">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#trang-chu" class="footer-social-link" aria-label="Instagram">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="#trang-chu" class="footer-social-link" aria-label="Youtube">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
-                <span id="otpTimerDisplay" style="font-size:13px;font-weight:700;color:#01e281;font-family:'JetBrains Mono','Courier New',monospace;">5:00</span>
+
+                <div class="footer-col">
+                    <h4>Liên Kết &amp; Hỗ Trợ</h4>
+                    <ul class="footer-links-list">
+                        <li><a href="#trang-chu">Trang chủ</a></li>
+                        <li><a href="#khong-gian-section">Hệ thống cơ sở Spa</a></li>
+                        <li><a href="#quy-trinh-section">Quy trình chăm sóc 4 bước</a></li>
+                        <li><a href="#quyen-loi-section">Quyền lợi thành viên</a></li>
+                        <li><a href="#quy-trinh-section">Chính sách đổi lịch &amp; Bảo hành</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Dịch Vụ Nổi Bật</h4>
+                    <ul class="footer-links-list">
+                        <li><a href="#bang-gia-section">Grooming &amp; Tắm sấy thảo mộc</a></li>
+                        <li><a href="#bang-gia-section">Cắt tỉa tạo kiểu chuẩn Salon</a></li>
+                        <li><a href="#bang-gia-section">Spa thảo dược &amp; Chăm sóc da</a></li>
+                        <li><a href="#bang-gia-section">Vệ sinh tai, móng &amp; tuyến hôi</a></li>
+                        <li><a href="#bang-gia-section">Combo chăm sóc &amp; Lưu trú VIP</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Thông Tin Liên Hệ</h4>
+                    <div class="footer-info-list">
+                        <div class="footer-info-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <div>
+                                <strong>TP.HCM:</strong> 128 Nguyễn Đình Chiểu, Q.3
+                            </div>
+                        </div>
+                        <div class="footer-info-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <div>
+                                <strong>Hà Nội:</strong> 45 Hoàng Cầu, Q. Đống Đa
+                            </div>
+                        </div>
+                        <div class="footer-info-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>08:00 &ndash; 20:30 (Thứ 2 &ndash; Chủ Nhật)</span>
+                        </div>
+                        <div class="footer-info-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <span>contact@petcare.vn &bull; 1900 6868</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div style="padding:24px 28px 26px;">
-                <p style="font-size:13px;color:#64748b;margin:0 0 20px;line-height:1.5;">
-                    Mã 6 số đã gửi tới <strong id="otpEmailDisplay" style="color:#0f172a;"></strong>
-                </p>
-                <div id="otpBoxRow" style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
-                    <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
-                    <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
-                    <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
-                    <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
-                    <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
-                    <input class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off">
-                </div>
-                <button id="otpSubmitBtn" disabled style="width:100%;padding:13px;border:none;border-radius:12px;background:#0f172a;color:#fff;font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.35;transition:all .2s;">
-                    <i class="fas fa-spinner" id="otpSpinner" style="display:none;animation:spin 1s linear infinite;"></i>
-                    <span>Xác minh</span>
-                </button>
-                <div style="text-align:center;margin-top:14px;font-size:12.5px;color:#94a3b8;">
-                    <a href="#" id="otpResendLink" style="color:#94a3b8;font-weight:600;pointer-events:none;text-decoration:none;">Gửi lại mã</a>
-                    <span id="otpResendCooldown" style="color:#94a3b8;margin-left:4px;"></span>
-                </div>
+
+            <div class="footer-bottom">
+                <span>&copy; 2025 Pet care Pet Grooming &amp; Spa Salon. Toàn bộ quyền được bảo lưu.</span>
+                <span class="footer-verified">&#10003; Chứng nhận Salon Grooming Chuyên Nghiệp Việt Nam</span>
             </div>
+        </div>
+    </footer>
+
+    <!-- ====================================================================
+         11. INTERACTIVE BOOKING MODAL
+         ==================================================================== -->
+    <div class="modal-backdrop ${bookingSuccess ? 'open' : ''}" id="bookingModal">
+        <div class="booking-modal-box">
+            <button type="button" class="modal-close-btn" id="closeModalBtn" aria-label="Đóng">&times;</button>
+            <h3>Đặt Lịch Hẹn &amp; Giữ Chỗ Tại Pet care</h3>
+            <p>Hệ thống tự động giữ chỗ chuyên viên 15 phút. Miễn phí đổi hoặc hủy hẹn trước 2 giờ.</p>
+
+            <c:if test="${bookingSuccess}">
+                <div class="booking-toast">
+                    <strong>&#10003; Đã giữ chỗ 15 phút cho bé ${bookingData.petName}!</strong><br/>
+                    Cảm ơn <b>${bookingData.ownerName}</b> (${bookingData.phone}). Hệ thống <b>Pet care</b> tại cơ sở
+                    <b>${bookingData.branch}</b> đã ghi nhận lịch hẹn gói <b>${bookingData.serviceName}</b>.
+                </div>
+            </c:if>
+            <div class="booking-toast" id="bookingSuccessStatic" style="display:none;"></div>
+
+            <form action="${pageContext.request.contextPath}/dat-lich" method="post" id="petcareBookingForm">
+                <div class="modal-form-grid">
+                    <div class="modal-field">
+                        <label for="ownerName">Họ và tên Sen *</label>
+                        <input type="text" id="ownerName" name="ownerName" class="modal-input"
+                            value="${sessionScope.loggedInUser}" placeholder="Nguyễn Thảo My" required />
+                    </div>
+                    <div class="modal-field">
+                        <label for="phone">Số điện thoại / Zalo *</label>
+                        <input type="tel" id="phone" name="phone" class="modal-input"
+                            value="${sessionScope.loggedInPhone}" placeholder="0912 345 678" required />
+                    </div>
+                    <div class="modal-field">
+                        <label for="petName">Tên bé cưng *</label>
+                        <input type="text" id="petName" name="petName" class="modal-input" placeholder="Miu, Bơ, Mây..." required />
+                    </div>
+                    <div class="modal-field">
+                        <label for="petType">Giống loài &amp; Cân nặng *</label>
+                        <select id="petType" name="petType" class="modal-input">
+                            <option value="Chó (2 - 5 kg)">Chó (2 - 5 kg)</option>
+                            <option value="Mèo (2 - 5 kg)">Mèo (2 - 5 kg)</option>
+                            <option value="Chó (5 - 12 kg)">Chó (5 - 12 kg)</option>
+                            <option value="Chó (> 12 kg)">Chó (&gt; 12 kg)</option>
+                        </select>
+                    </div>
+                    <div class="modal-field full">
+                        <label for="modalServiceName">Gói dịch vụ chăm sóc *</label>
+                        <select id="modalServiceName" name="serviceName" class="modal-input">
+                            <option value="Grooming & Tắm Sấy Thảo Mộc Toàn Diện (150.000 đ)">Grooming &amp; Tắm Sấy Thảo Mộc Toàn Diện (150.000 đ)</option>
+                            <option value="Cắt Tỉa Tạo Kiểu Chuẩn Salon (280.000 đ)">Cắt Tỉa Tạo Kiểu Chuẩn Salon (280.000 đ)</option>
+                            <option value="Spa Thảo Dược & Phục Hồi Da Lông (350.000 đ)">Spa Thảo Dược &amp; Phục Hồi Da Lông (350.000 đ)</option>
+                            <option value="Vệ Sinh Tai, Móng & Tuyến Hôi Chuyên Sâu (120.000 đ)">Vệ Sinh Tai, Móng &amp; Tuyến Hôi Chuyên Sâu (120.000 đ)</option>
+                            <option value="Kiểm Tra Sức Khỏe Cơ Bản & Gỡ Rối Lông (180.000 đ)">Kiểm Tra Sức Khỏe Cơ Bản &amp; Gỡ Rối Lông (180.000 đ)</option>
+                            <option value="Combo Chăm Sóc Toàn Diện & Lưu Trú VIP (390.000 đ)">Combo Chăm Sóc Toàn Diện &amp; Lưu Trú VIP (390.000 đ)</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <label for="branch">Chi nhánh Salon Pet care *</label>
+                        <select id="branch" name="branch" class="modal-input">
+                            <option value="128 Nguyễn Đình Chiểu, Q.3, TP.HCM">128 Nguyễn Đình Chiểu, Q.3, TP.HCM</option>
+                            <option value="45 Hoàng Cầu, Đống Đa, Hà Nội">45 Hoàng Cầu, Đống Đa, Hà Nội</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <label for="timeSlot">Khung giờ hẹn *</label>
+                        <select id="timeSlot" name="timeSlot" class="modal-input">
+                            <option value="09:00 - 10:30">09:00 - 10:30</option>
+                            <option value="10:30 - 12:00">10:30 - 12:00</option>
+                            <option value="14:00 - 15:30">14:00 - 15:30</option>
+                            <option value="16:00 - 17:30">16:00 - 17:30</option>
+                            <option value="18:00 - 19:30">18:00 - 19:30</option>
+                        </select>
+                    </div>
+                    <div class="modal-field full">
+                        <label for="notes">Lưu ý tính cách / thói quen của bé</label>
+                        <textarea id="notes" name="notes" class="modal-input" placeholder="Ví dụ: Bé hơi nhát máy sấy, thích cắt form Teddy tròn..."></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-modal-submit">Xác nhận đặt lịch &amp; Giữ chỗ 15 phút</button>
+            </form>
         </div>
     </div>
-    <style>
-        .otp-digit {
-            width:46px; height:54px; border-radius:12px;
-            border:2px solid #e2e8f0;
-            text-align:center; font-size:22px; font-weight:700;
-            font-family:'JetBrains Mono','Courier New',monospace;
-            color:#0f172a; outline:none; transition:all .18s; background:#fff;
-        }
-        .otp-digit:focus { border-color:#01e281; box-shadow:0 0 0 3px rgba(1,226,129,.15); transform:scale(1.06); }
-        .otp-digit.filled { border-color:#01e281; background:#f0fff8; color:#065f46; }
-        @keyframes otpCardIn {
-            from { opacity:0; transform:scale(.92) translateY(18px); }
-            to   { opacity:1; transform:scale(1)   translateY(0); }
-        }
-        @keyframes otpShake {
-            0%,100% { transform:translateX(0); }
-            20%     { transform:translateX(-5px); }
-            40%     { transform:translateX(5px); }
-            60%     { transform:translateX(-3px); }
-            80%     { transform:translateX(3px); }
-        }
-    </style>
 
-    <!-- Footer -->
-    <jsp:include page="/common/footer.jsp" />
-
-    <!-- Cart Drawer -->
-    <div class="vs-cart-overlay" id="vsCartOverlay" aria-hidden="true"></div>
-    <aside class="vs-cart-drawer" id="vsCartDrawer" role="dialog" aria-modal="true" aria-label="Giỏ hàng">
-        <div class="vs-cart-drawer__header">
-            <h2 class="vs-cart-drawer__title"><i class="fas fa-shopping-cart" style="color:var(--vs-primary);margin-right:8px"></i>Giỏ hàng</h2>
-            <button class="vs-cart-drawer__close" id="vsCartClose" aria-label="Đóng giỏ hàng"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="vs-cart-drawer__body">
-            <div class="vs-cart-empty">
-                <i class="fas fa-shopping-basket"></i>
-                <p>Giỏ hàng của bạn đang trống</p>
-                <a href="${pageContext.request.contextPath}/customer/tim-kiem" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--vs-primary);color:#fff;border-radius:999px;font-weight:700;text-decoration:none;font-size:14px">Khám phá sản phẩm</a>
-            </div>
-        </div>
-        <div class="vs-cart-drawer__footer">
-            <div class="vs-cart-drawer__total"><span>Tổng cộng</span><span>0đ</span></div>
-            <div class="vs-cart-drawer__actions">
-                <a href="${pageContext.request.contextPath}/customer/gio-hang" class="vs-cart-drawer__btn vs-cart-drawer__btn--primary"><i class="fas fa-shopping-cart"></i>Xem giỏ hàng</a>
-                <a href="${pageContext.request.contextPath}/customer/dat-san" class="vs-cart-drawer__btn vs-cart-drawer__btn--outline"><i class="fas fa-calendar-check"></i>Đặt sân ngay</a>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Scroll to Top with SVG Progress Ring -->
-    <button class="vs-scroll-top" id="scrollTop" aria-label="Lên đầu trang">
-        <svg viewBox="0 0 48 48" aria-hidden="true">
-            <circle class="vs-scroll-top__bg" cx="24" cy="24" r="20.8"/>
-            <circle class="vs-scroll-top__progress" cx="24" cy="24" r="20.8"/>
-        </svg>
-        <i class="fas fa-chevron-up vs-scroll-top__icon"></i>
-    </button>
-
-    <!-- Scripts -->
-    <script defer src="${pageContext.request.contextPath}/assets/js/home-commerce.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            // ── AUTH LOGIC ──────────────────────────────────────────────
-            const homeView = document.getElementById('homeView');
-            const authView = document.getElementById('authView');
-            const accountBtn = document.getElementById('authBtn');
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const wantsAuthView = window.location.hash === '#auth' || urlParams.has('auth');
-
-            function handleRoute() {
-                const hash = window.location.hash;
-                const params = new URLSearchParams(window.location.search);
-                const isAuth = hash === '#auth' || params.has('auth');
-                if (isAuth) {
-                    homeView.classList.remove('active');
-                    authView.classList.add('active');
-                } else {
-                    authView.classList.remove('active');
-                    homeView.classList.add('active');
-                }
-                window.scrollTo({ top: 0, behavior: 'instant' });
-            }
-
-            window.addEventListener('hashchange', handleRoute);
-
-            if (wantsAuthView) {
-                handleRoute();
-                if (urlParams.get('notice') === 'loginRequired') {
-                    const banner = document.createElement('div');
-                    banner.className = 'auth-login-notice';
-                    banner.style.cssText = 'max-width:520px;margin:0 auto 20px;padding:14px 18px;border-radius:10px;background:#fff7ed;border:1px solid #fdba74;color:#9a3412;font-size:14px;text-align:center;';
-                    banner.textContent = 'Vui lòng đăng nhập để tiếp tục thao tác này.';
-                    const authContainer = document.querySelector('#authView .auth-container');
-                    if (authContainer) authContainer.parentNode.insertBefore(banner, authContainer);
-                }
-            }
-
-            const pendingRedirect = urlParams.get('redirect');
-
-            if (accountBtn) {
-                accountBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.location.hash = '#auth';
-                });
-            }
-
-            const breadcrumbHome = document.getElementById('breadcrumbHome');
-            if (breadcrumbHome) {
-                breadcrumbHome.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.location.hash = '#home';
-                });
-            }
-
-            // Auth Tabs
-            const tabBtns = document.querySelectorAll('.auth-tab-btn');
-            const authCols = document.querySelectorAll('.auth-col');
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    authCols.forEach(c => c.classList.remove('active'));
-                    btn.classList.add('active');
-                    const targetId = btn.getAttribute('data-target');
-                    document.getElementById(targetId).classList.add('active');
-                });
-            });
-
-            // Password Toggle
-            document.querySelectorAll('.password-toggle').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const input = btn.previousElementSibling;
-                    const icon = btn.querySelector('i');
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.classList.replace('fa-eye-slash', 'fa-eye');
-                    } else {
-                        input.type = 'password';
-                        icon.classList.replace('fa-eye', 'fa-eye-slash');
-                    }
-                });
-            });
-
-            // Forgot Modal
-            const forgotModal = document.getElementById('forgotModal');
-            const forgotBtn   = document.getElementById('forgotBtn');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const forgotEmail = document.getElementById('forgotEmail');
-
-            function openModal()  { forgotModal.classList.add('active'); document.body.style.overflow = 'hidden'; setTimeout(() => forgotEmail && forgotEmail.focus(), 100); }
-            function closeModal() { forgotModal.classList.remove('active'); document.body.style.overflow = ''; if (forgotBtn) forgotBtn.focus(); }
-
-            if (forgotBtn) forgotBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
-            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
-            window.addEventListener('click', (e) => { if (e.target === forgotModal) closeModal(); });
-            window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && forgotModal && forgotModal.classList.contains('active')) closeModal(); });
-
-            // Toast
-            const successToast = document.getElementById('successToast');
-            const toastMessage = document.getElementById('toastMessage');
-            function showToast(msg, isError) {
-                const icon = document.getElementById('toastIcon');
-                toastMessage.textContent = msg;
-                if (isError) {
-                    successToast.classList.add('error');
-                    if (icon) { icon.className = 'fas fa-times-circle'; icon.style.marginRight = '8px'; }
-                } else {
-                    successToast.classList.remove('error');
-                    if (icon) { icon.className = 'fas fa-check-circle'; icon.style.marginRight = '8px'; }
-                }
-                successToast.classList.add('active');
-                setTimeout(() => successToast.classList.remove('active'), 3500);
-            }
-
-            // Newsletter
-            const newsletterForm = document.getElementById('newsletterForm');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const emailInput = newsletterForm.querySelector('input[type="email"]');
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailInput || !emailRegex.test(emailInput.value.trim())) {
-                        showToast('Vui lòng nhập một địa chỉ email hợp lệ.', true);
-                        return;
-                    }
-                    showToast('Chức năng đăng ký nhận ưu đãi đang được phát triển.', false);
-                    newsletterForm.reset();
-                });
-            }
-
-            // Validation helpers
-            const showError = (input, show) => {
-                const errorMsg = document.getElementById(input.id + 'Error');
-                if (show) {
-                    input.setAttribute('aria-invalid', 'true');
-                    if (errorMsg) errorMsg.classList.add('visible');
-                } else {
-                    input.removeAttribute('aria-invalid');
-                    if (errorMsg) errorMsg.classList.remove('visible');
-                }
-            };
-            document.querySelectorAll('.form-control, .form-check input').forEach(input => {
-                input.addEventListener('input', () => showError(input, false));
-                input.addEventListener('change', () => showError(input, false));
-            });
-
-            // Login Form
-            const loginForm = document.getElementById('loginForm');
-            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
-            if (loginForm) {
-                loginForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    let isValid = true, firstError = null;
-                    const email = document.getElementById('loginEmail');
-                    const password = document.getElementById('loginPassword');
-                    if (!email.value.trim()) { showError(email, true); isValid = false; if (!firstError) firstError = email; }
-                    if (!password.value.trim()) { showError(password, true); isValid = false; if (!firstError) firstError = password; }
-                    if (!isValid) { firstError.focus(); return; }
-
-                    loginSubmitBtn.disabled = true;
-                    loginSubmitBtn.classList.add('loading');
-                    const btnText = loginSubmitBtn.querySelector('.btn-text');
-                    const originalText = btnText.textContent;
-                    btnText.textContent = 'Đang đăng nhập...';
-
-                    const formData = new URLSearchParams();
-                    const loginIdentifier = email.value.trim();
-                    const isPhone = /^(0|\+84|84)[0-9]{8,9}$/.test(loginIdentifier);
-                    formData.append('username', loginIdentifier);
-                    formData.append('phone', loginIdentifier);
-                    formData.append('password', password.value);
-                    formData.append('loginMethod', isPhone ? 'phone' : 'account');
-                    if (pendingRedirect) formData.append('redirect', pendingRedirect);
-
-                    fetch('dangnhap', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                        body: formData.toString()
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        loginSubmitBtn.disabled = false;
-                        loginSubmitBtn.classList.remove('loading');
-                        btnText.textContent = originalText;
-                        if (data.success) {
-                            showToast('Đăng nhập thành công!', false);
-                            setTimeout(() => { window.location.href = data.redirectUrl; }, 500);
-                        } else {
-                            showToast('Lỗi: ' + (data.loi || 'Đăng nhập thất bại'), true);
-                        }
-                    })
-                    .catch(() => {
-                        loginSubmitBtn.disabled = false;
-                        loginSubmitBtn.classList.remove('loading');
-                        btnText.textContent = originalText;
-                        showToast('Lỗi kết nối máy chủ', true);
-                    });
-                });
-            }
-
-            // Register Form
-            const registerForm = document.getElementById('registerForm');
-            const registerSubmitBtn = document.getElementById('registerSubmitBtn');
-            if (registerForm) {
-                registerForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    let isValid = true, firstError = null;
-                    const name = document.getElementById('regName');
-                    const phone = document.getElementById('regPhone');
-                    const email = document.getElementById('regEmail');
-                    const password = document.getElementById('regPassword');
-                    const confirm = document.getElementById('regConfirmPassword');
-                    const terms = document.getElementById('agreeTerms');
-
-                    if (!name.value.trim()) { showError(name, true); isValid = false; if (!firstError) firstError = name; }
-                    if (!/(84|0[3|5|7|8|9])+([0-9]{8})\b/.test(phone.value.trim())) { showError(phone, true); isValid = false; if (!firstError) firstError = phone; }
-                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) { showError(email, true); isValid = false; if (!firstError) firstError = email; }
-                    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password.value.trim())) { showError(password, true); isValid = false; if (!firstError) firstError = password; }
-                    if (!confirm.value.trim() || password.value.trim() !== confirm.value.trim()) { showError(confirm, true); isValid = false; if (!firstError) firstError = confirm; }
-                    if (!terms.checked) { showError(terms, true); isValid = false; if (!firstError) firstError = terms; }
-                    if (!isValid) { if (firstError) firstError.focus(); return; }
-
-                    registerSubmitBtn.disabled = true;
-                    registerSubmitBtn.classList.add('loading');
-                    const btnText = registerSubmitBtn.querySelector('.btn-text');
-                    const originalText = btnText.textContent;
-                    btnText.textContent = 'Đang tạo tài khoản...';
-
-                    const params = new URLSearchParams();
-                    params.append('fullname', name.value.trim());
-                    params.append('phone', phone.value.trim());
-                    params.append('email', email.value.trim());
-                    params.append('password', password.value.trim());
-                    params.append('confirm_password', confirm.value.trim());
-                    params.append('agree', 'Đồng ý');
-
-                    fetch('${pageContext.request.contextPath}/dangky', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                        body: params
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success && data.step === 'otp') {
-                            openOtpModal(data.email);
-                        } else if (data.success && data.redirectUrl) {
-                            window.location.href = data.redirectUrl;
-                        } else {
-                            registerSubmitBtn.disabled = false;
-                            registerSubmitBtn.classList.remove('loading');
-                            btnText.textContent = originalText;
-                            showToast(data.loi || 'Đã xảy ra lỗi, vui lòng thử lại.', true);
-                        }
-                    })
-                    .catch(() => {
-                        registerSubmitBtn.disabled = false;
-                        registerSubmitBtn.classList.remove('loading');
-                        btnText.textContent = originalText;
-                        showToast('Lỗi kết nối, vui lòng thử lại.', true);
-                    });
-                });
-            }
-
-            // ── OTP MODAL ───────────────────────────────────────────────
-            (function() {
-                const modal = document.getElementById('otpModal');
-                const boxes = Array.from(document.querySelectorAll('.otp-digit'));
-                const submitBtn = document.getElementById('otpSubmitBtn');
-                const spinner = document.getElementById('otpSpinner');
-                const timerEl = document.getElementById('otpTimerDisplay');
-                const resendLink = document.getElementById('otpResendLink');
-                const resendCooldown = document.getElementById('otpResendCooldown');
-                const emailDisplay = document.getElementById('otpEmailDisplay');
-                let otpEmail = '', expireTimer, resendTimer;
-
-                function setBoxBlur(box) { box.classList.toggle('filled', !!box.value); }
-                function shakeBoxes() {
-                    boxes.forEach(b => {
-                        b.style.borderColor = '#dc2626';
-                        b.style.animation = 'otpShake .4s ease';
-                        setTimeout(() => { b.style.animation = ''; b.style.borderColor = ''; setBoxBlur(b); }, 500);
-                    });
-                }
-                function updateState() {
-                    const full = boxes.every(b => b.value);
-                    submitBtn.disabled = !full;
-                    submitBtn.style.opacity = full ? '1' : '.35';
-                    submitBtn.style.cursor = full ? 'pointer' : 'not-allowed';
-                }
-                boxes.forEach((box, i) => {
-                    box.addEventListener('blur', () => setBoxBlur(box));
-                    box.addEventListener('keydown', e => {
-                        if (e.key === 'Backspace') {
-                            if (!box.value && i > 0) { boxes[i-1].focus(); boxes[i-1].value = ''; setBoxBlur(boxes[i-1]); }
-                            else box.value = '';
-                            updateState();
-                        } else if (e.key === 'ArrowLeft' && i > 0) boxes[i-1].focus();
-                        else if (e.key === 'ArrowRight' && i < 5) boxes[i+1].focus();
-                    });
-                    box.addEventListener('input', e => {
-                        const raw = box.value.replace(/\D/g,'').slice(-1);
-                        box.value = raw;
-                        updateState();
-                        if (raw && i < 5) boxes[i+1].focus();
-                    });
-                    box.addEventListener('paste', e => {
-                        e.preventDefault();
-                        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
-                        text.split('').slice(0,6).forEach((ch, idx) => { if (boxes[idx]) boxes[idx].value = ch; });
-                        updateState();
-                        const last = Math.min(text.length, 5);
-                        if (boxes[last]) boxes[last].focus();
-                    });
-                });
-                function startExpireTimer() {
-                    clearInterval(expireTimer);
-                    let secs = 5 * 60;
-                    function tick() {
-                        const m = Math.floor(secs / 60), s = secs % 60;
-                        timerEl.textContent = m + ':' + String(s).padStart(2,'0');
-                        timerEl.style.color = secs < 30 ? '#f87171' : '#01e281';
-                        if (secs <= 0) { clearInterval(expireTimer); timerEl.textContent = 'Hết hạn'; }
-                        secs--;
-                    }
-                    tick(); expireTimer = setInterval(tick, 1000);
-                }
-                function startResendCooldown() {
-                    clearInterval(resendTimer);
-                    resendLink.style.color = '#94a3b8';
-                    resendLink.style.pointerEvents = 'none';
-                    let secs = 60;
-                    function tick() {
-                        resendCooldown.textContent = 'Có thể gửi lại sau ' + secs + 's';
-                        if (secs <= 0) { clearInterval(resendTimer); resendCooldown.textContent = ''; resendLink.style.color = '#01a85a'; resendLink.style.pointerEvents = 'auto'; }
-                        secs--;
-                    }
-                    tick(); resendTimer = setInterval(tick, 1000);
-                }
-                window.openOtpModal = function(email) {
-                    otpEmail = email;
-                    emailDisplay.textContent = email;
-                    boxes.forEach(b => { b.value = ''; setBoxBlur(b); });
-                    updateState();
-                    modal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                    startExpireTimer();
-                    startResendCooldown();
-                    setTimeout(() => boxes[0].focus(), 150);
-                };
-                resendLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (resendLink.style.pointerEvents === 'none') return;
-                    fetch('${pageContext.request.contextPath}/resend-otp', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                        body: 'email=' + encodeURIComponent(otpEmail)
-                    }).catch(() => {});
-                    startExpireTimer(); startResendCooldown();
-                    boxes.forEach(b => { b.value = ''; setBoxBlur(b); });
-                    updateState(); boxes[0].focus();
-                });
-                submitBtn.addEventListener('click', () => {
-                    const code = boxes.map(b => b.value).join('');
-                    if (code.length < 6) { shakeBoxes(); return; }
-                    submitBtn.disabled = true;
-                    spinner.style.display = 'inline-block';
-                    const p = new URLSearchParams();
-                    p.append('otp', code); p.append('email', otpEmail);
-                    fetch('${pageContext.request.contextPath}/nhapma', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                        body: p
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        spinner.style.display = 'none';
-                        if (data.success) {
-                            clearInterval(expireTimer); clearInterval(resendTimer);
-                            modal.style.display = 'none'; document.body.style.overflow = '';
-                            showToast('Tạo tài khoản thành công! Đang chuyển trang...', false);
-                            setTimeout(() => { window.location.href = data.redirectUrl || '${pageContext.request.contextPath}/index.jsp?auth=login'; }, 1500);
-                        } else {
-                            shakeBoxes(); submitBtn.disabled = false;
-                            showToast(data.loi || 'Mã OTP không đúng, vui lòng thử lại.', true);
-                        }
-                    })
-                    .catch(() => {
-                        spinner.style.display = 'none'; submitBtn.disabled = false;
-                        shakeBoxes(); showToast('Lỗi kết nối, vui lòng thử lại.', true);
-                    });
-                });
-                modal.addEventListener('click', (e) => { if (e.target === modal) { /* intentionally no close */ } });
-            })();
-            // ── END OTP MODAL ────────────────────────────────────────────
-
-            // Real-time password matching feedback
-            const PASS_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-            function onRegPasswordInput() {
-                const pw = document.getElementById('regPassword');
-                const cf = document.getElementById('regConfirmPassword');
-                if (!pw) return;
-                showError(pw, pw.value.trim() && !PASS_REGEX.test(pw.value.trim()));
-                if (cf && cf.value.trim()) updateConfirmFeedback(pw, cf);
-            }
-            function onRegConfirmInput() {
-                const pw = document.getElementById('regPassword');
-                const cf = document.getElementById('regConfirmPassword');
-                if (!pw || !cf) return;
-                updateConfirmFeedback(pw, cf);
-            }
-            function updateConfirmFeedback(pw, cf) {
-                const ok = document.getElementById('regConfirmOk');
-                const match = cf.value.trim() && pw.value.trim() === cf.value.trim();
-                if (match) {
-                    showError(cf, false);
-                    if (ok) ok.style.display = 'flex';
-                } else {
-                    if (ok) ok.style.display = 'none';
-                    if (cf.value.trim()) showError(cf, true);
-                }
-            }
-
-            // Forgot Form
-            const forgotForm = document.getElementById('forgotForm');
-            const forgotSubmitBtn = document.getElementById('forgotSubmitBtn');
-            if (forgotForm) {
-                forgotForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const email = document.getElementById('forgotEmail');
-                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-                        showError(email, true); email.focus(); return;
-                    }
-                    forgotSubmitBtn.disabled = true;
-                    forgotSubmitBtn.classList.add('loading');
-                    const btnText = forgotSubmitBtn.querySelector('.btn-text');
-                    const originalText = btnText.textContent;
-                    btnText.textContent = 'Đang gửi...';
-
-                    const formData = new URLSearchParams();
-                    formData.append('method', 'email');
-                    formData.append('email', email.value.trim());
-
-                    fetch('${pageContext.request.contextPath}/quenmatkhau', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                        body: formData.toString()
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        forgotSubmitBtn.disabled = false;
-                        forgotSubmitBtn.classList.remove('loading');
-                        btnText.textContent = originalText;
-                        if (data.success) {
-                            closeModal();
-                            showToast(data.thongbao || 'Mật khẩu mới đã được gửi đến email của bạn.');
-                            forgotForm.reset();
-                            setTimeout(() => { window.location.href = data.redirectUrl; }, 1500);
-                        } else {
-                            showToast(data.loi || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.', true);
-                        }
-                    })
-                    .catch(() => {
-                        forgotSubmitBtn.disabled = false;
-                        forgotSubmitBtn.classList.remove('loading');
-                        btnText.textContent = originalText;
-                        showToast('Lỗi kết nối máy chủ', true);
-                    });
-                });
-            }
-
-            // Category panel interactive (supplement to home-commerce.js)
-            const catItems = document.querySelectorAll('.vs-cat-item');
-            const catPanelTitle = document.getElementById('catPanelTitle');
-            const catPanelSub   = document.getElementById('catPanelSub');
-            const catPanelLink  = document.getElementById('catPanelLink');
-            catItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const cat = item.dataset.cat;
-                    catItems.forEach(c => c.classList.remove('is-active'));
-                    item.classList.add('is-active');
-                    document.querySelectorAll('.vs-cat-panel__img').forEach(img => img.classList.remove('is-visible'));
-                    const target = document.querySelector('.vs-cat-panel__img[data-cat="' + cat + '"]');
-                    if (target) target.classList.add('is-visible');
-                    if (catPanelTitle) catPanelTitle.textContent = item.dataset.title || '';
-                    if (catPanelSub)   catPanelSub.textContent   = item.dataset.sub   || '';
-                    if (catPanelLink)  catPanelLink.href          = item.dataset.link  || '#';
-                });
-                item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } });
-            });
-        });
-    </script>
+    <script src="${pageContext.request.contextPath}/assets/js/home.js"></script>
 </body>
 </html>

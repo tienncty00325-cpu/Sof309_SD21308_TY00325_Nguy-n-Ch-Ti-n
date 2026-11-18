@@ -1,11 +1,6 @@
 # BẢNG KỊCH BẢN KIỂM THỬ (TEST CASES)
 
-## Thông tin chung
-- **Dự án**: Hệ thống Quản lý và Đặt sân Thể thao Trực tuyến **V-SPORT**
-- **Sinh viên thực hiện**: Nguyễn Chí Tiến — **MSSV**: TY00325 — **Lớp**: SD21308
-- **Tổng số Test Case**: **30 Test Cases** (Gồm **18 Unit Test Cases - JUnit 5** và **12 UI/Functional Test Cases - Selenium WebDriver 4**)
 
----
 
 ## PHẦN 1: KỊCH BẢN KIỂM THỬ ĐƠN VỊ (UNIT TEST CASES — JUNIT 5)
 

@@ -1,2 +1,0 @@
-<%-- CSRF hidden field — nhúng vào mọi <form method="post"> --%>
-<input type="hidden" name="_csrf" value="${sessionScope.csrfToken}">
